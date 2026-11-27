@@ -1,0 +1,13 @@
+strip s1 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 266, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 175, "innerScroll": 0, "clipped": 0}
+strip s2 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 266, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 17, "innerScroll": 0, "clipped": 0}
+strip s3 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 240, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 17, "innerScroll": 0, "clipped": 0}
+strip free {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 123, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": Infinity, "innerScroll": 0, "clipped": 0}
+pop s1 {"lab": 638, "guideUI": [304, 165], "view3d": [664, 466], "map": 326, "cover3d": 11, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 9, "innerScroll": 0, "clipped": 0}
+pop s2 {"lab": 638, "guideUI": [304, 165], "view3d": [664, 466], "map": 326, "cover3d": 2, "coverMap": 29, "coverRates": 0, "coversSpot": true, "textToSpot": 0, "innerScroll": 0, "clipped": 0}
+pop s3 {"lab": 638, "guideUI": [304, 147], "view3d": [664, 466], "map": 299, "cover3d": 4, "coverMap": 0, "coverRates": 0, "coversSpot": true, "textToSpot": 0, "innerScroll": 0, "clipped": 0}
+pop tip+guide both visible: True
+pop free {"lab": 638, "guideUI": null, "view3d": [664, 466], "map": 161, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": Infinity, "innerScroll": 0, "clipped": 0}
+hybrid s1 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 266, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 175, "innerScroll": 0, "clipped": 0}
+hybrid s2 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 266, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 17, "innerScroll": 0, "clipped": 0}
+hybrid s3 {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 240, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": 17, "innerScroll": 0, "clipped": 0}
+hybrid free {"lab": 638, "guideUI": [1009, 57], "view3d": [664, 466], "map": 123, "cover3d": 0, "coverMap": 0, "coverRates": 0, "coversSpot": false, "textToSpot": Infinity, "innerScroll": 0, "clipped": 0}

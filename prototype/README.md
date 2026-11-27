@@ -40,3 +40,39 @@ Chromium, 1366×650 viewport, with the ~64px guide strip on. Raw output is in `m
 All six layouts fit in a 638px lab with no clipping and no inner scroll.
 
 Dropping the guide strip gains about 17px of view height in A and B. It gains nothing for C's 3D view, which is limited by width, but C's map grows.
+
+---
+
+# PROTOTYPE: where guide text sits (ticket #4)
+
+Question: does a guide's text sit in a **strip** inside the lab, or in **pop-ups** next to the highlighted controls? Built on the chosen layout (C, ⓘ tips).
+
+## How to open it
+
+`prototype/week3-one-screen.html?variant=C&text=tips&guide=strip|pop|hybrid`. The black bar's "Guide:" button cycles the modes. Press `h` to hide the bar.
+
+- **strip:** one row along the bottom of the lab holds the step text plus Back, Skip step / Next, and Skip guide.
+- **pop:** no strip, so the map gets the height back. A card sits beside the control the step uses. The placement code tries six spots and picks the one that covers the least of the highlighted pieces. Replay lives in the lab heading.
+- **hybrid** (cheap extra): the strip, plus a small bobbing "▼ here" tag on the control to use. The tag doesn't move when the learner has reduced motion on.
+
+What all three share:
+- 3 sample steps of predict-then-act. The text is a placeholder; the real script comes later.
+- The guide opens automatically. Each step completes when the learner uses the real control. Nothing is locked: "Skip step" becomes "Next" once the step is done.
+- The guide hands over about 2s after the last action (Reveal), then shows "Explore freely" with "Replay guide". Esc exits.
+- The old W3 guide UI is hidden. Completion isn't saved (a prototype rule).
+
+## Measurements (Chromium 1366×650; raw output in `measurements-guide.txt`, screenshots `shots/guide-*`)
+
+| | Guide UI size | Covers 3D / map / rates | Covers a highlighted piece? | Text → highlighted piece | Map size (step 1) |
+|---|---|---|---|---|---|
+| strip | 1009×57, one line at 30 words | 0 / 0 / 0 | never | 175px (step 1, map at top right), 17px (steps 2–3) | 266² |
+| pop | 304×147–165 | step 1: 11% of 3D · step 2: 29% of map · step 3: 4% of 3D | **steps 2 and 3**: covers the map top in step 2 and the **Reveal button** that step 3 asks for | 0–9px | 326² |
+| hybrid | same as strip, plus a 1-line tag | 0 / 0 / 0 | never (the tag sits above the control) | same as strip; the tag is at the control | 266² |
+
+The lab is 638px in every mode, with no inner scroll and nothing clipped.
+
+**Findings**
+- **Pop-ups have no free spot in this layout.** The 3D takes 2/3 of the width and the side column is packed, so steps that highlight two areas (control plus output) leave nowhere to put a 300px card. It lands on something the step wants watched.
+- **ⓘ and guide collide** (`shots/guide-pop-with-tip.png`). Opening the climb ⓘ while the step-3 pop-up is open shows two cards near the same controls. The ⓘ card lands over the 3D view.
+- **The strip costs nothing that matters.** It is 57px, and the 3D stays 664×466. Its weakness is distance: in step 1 the text is 175px from the map it refers to. The hybrid tag closes that gap without covering anything.
+- **Side finding for the W3 spec (not about the guide):** after Run and Reveal, the side column's readout text grows and squeezes the map from 266 to 123px (strip) or 161px (no strip). The readout needs a fixed height or a shorter text.

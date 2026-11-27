@@ -1,0 +1,74 @@
+/* PROTOTYPE, throwaway (wayfinder ticket #11). Week 4 boat lab in the same three layouts as Week 3. */
+#boat-lab .lab-head { grid-area: head; }
+#boat-lab .picker { grid-area: picker; margin: 0; }
+#boat-lab .sliders { grid-area: sliders; }
+#boat-lab .selected-card { grid-area: card; margin: 0; padding: .5rem .7rem; }
+#boat-lab .plot-cell { grid-area: stage; --ar: calc(440 / 430); }
+#boat-lab #region-note { grid-area: notes; margin: 0; }
+#boat-lab .guide-slot { grid-area: guide; }
+/* Compact pieces so the lab fits */
+#boat-lab .boat-grid { margin: 0; gap: .35rem; }
+/* Picker shows silhouette + name only; label and ratings appear in the selected-boat card. */
+#boat-lab .boat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#boat-lab .boat-card { padding: .25rem .3rem; font-size: .72rem; gap: .1rem; line-height: 1.25; }
+#boat-lab .boat-card > span:nth-of-type(n+2) { display: none; }
+#boat-lab .boat-card svg { height: 34px; }
+#boat-lab .controls { display: grid; gap: .3rem; margin: 0; }
+#boat-lab .slider-foot { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-top: .3rem; font-size: .78rem; }
+#boat-lab .calculation { margin: .35rem 0; }
+#boat-lab .term { padding: .25rem; font-size: .76rem; }
+#boat-lab .term strong { font-size: 1rem; }
+#boat-lab .probability { height: 1.6rem; margin: .3rem 0 1.2rem; }
+#boat-lab .selected-card p + p { margin-top: .2rem; }
+
+/* A · Stage + side rail */
+[data-variant="A"] #boat-lab {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "head head head"
+    "stage stage picker"
+    "stage stage sliders"
+    "stage stage ."
+    "card card notes"
+    "guide guide guide";
+}
+/* The calculation card lies flat under the plot in A. */
+[data-variant="A"] #boat-lab .selected-card { display: grid; grid-template-columns: 1fr 1.5fr; gap: .2rem .8rem; align-items: center; }
+[data-variant="A"] #boat-lab .selected-card .calculation { grid-row: 1 / span 2; grid-column: 2; }
+[data-variant="A"] #boat-lab #region-note { align-self: center; }
+
+/* B · Toolbar + twin views: sliders as one bar across the top, plot left, boats and calculation right */
+[data-variant="B"] #boat-lab {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "head head head"
+    "sliders sliders sliders"
+    "stage stage picker"
+    "stage stage card"
+    "notes notes card"
+    "guide guide guide";
+}
+[data-variant="B"] #boat-lab .sliders { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: .8rem; align-items: end;
+  background: var(--card); border: 1px solid var(--line); border-radius: .4rem; padding: .35rem .6rem; }
+[data-variant="B"] #boat-lab .sliders .controls { display: contents; }
+[data-variant="B"] #boat-lab .slider-foot { margin: 0; }
+[data-variant="B"] #boat-lab .boat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+/* C · Controls on the views: sliders float on the plot; boats and calculation in the side column */
+[data-variant="C"] #boat-lab {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "head head head"
+    "stage stage picker"
+    "stage stage card"
+    "stage stage notes"
+    "guide guide guide";
+}
+[data-variant="C"] #boat-lab .sliders { grid-area: stage; align-self: end; justify-self: start; z-index: 2; width: 15rem; margin: .5rem;
+  background: color-mix(in srgb, var(--card) 90%, transparent); border: 1px solid var(--line); border-radius: .45rem; padding: .4rem .55rem; box-shadow: 0 2px 10px rgba(0,0,0,.12); }
+[data-variant="C"] #boat-lab .plot-cell { justify-content: flex-end; padding-left: 13rem; }
+[data-variant="C"] #boat-lab .sliders { width: 12rem; }
+#boat-lab #feature-plot { width: min(100cqw, 100cqh * var(--ar)); height: auto; }

@@ -1,0 +1,66 @@
+/* PROTOTYPE, throwaway (wayfinder ticket #11). Three layouts of the same phone-lab DOM. */
+#phone #phone-views { display: contents; }
+#phone .telemetry { margin: 0; font-size: .8rem; line-height: 1.45; }
+#phone #stop-reason { margin: .2rem 0; }
+#phone .data-table { font-size: .8rem; width: 100%; }
+#phone .data-table th, #phone .data-table td { padding: .12rem .4rem; }
+#phone .lab-head { grid-area: head; }
+#phone #tower-controls { grid-area: towers; }
+#phone .stage { grid-area: stage; --ar: calc(600 / 420); }
+#phone .mapfig { grid-area: map; --ar: calc(440 / 420); }
+#phone #candidate-controls { grid-area: cand; }
+#phone #rates { grid-area: rates; }
+#phone #ascent-controls { grid-area: ascent; }
+#phone #phone-results { grid-area: results; }
+#phone .guide-slot { grid-area: guide; }
+
+/* A · Stage + side rail: 3D on the left 2/3; the right rail holds the map and every control in order of use; readouts sit under the stage. */
+[data-variant="A"] #phone {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto auto;
+  grid-template-areas:
+    "head head head"
+    "stage stage map"
+    "stage stage towers"
+    "stage stage cand"
+    "stage stage ascent"
+    "rates results ascent"
+    "guide guide guide";
+}
+
+/* B · Toolbar + twin views: one control bar across the top in order of use; 3D and map side by side; readouts under the map. */
+[data-variant="B"] #phone {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto auto;
+  grid-template-areas:
+    "head head head head head head head head head head head head"
+    "towers towers towers towers towers towers cand cand cand ascent ascent ascent"
+    "stage stage stage stage stage stage stage stage map map map map"
+    "stage stage stage stage stage stage stage stage rates rates rates rates"
+    "stage stage stage stage stage stage stage stage results results results results"
+    "guide guide guide guide guide guide guide guide guide guide guide guide";
+}
+[data-variant="B"] #phone #tower-controls, [data-variant="B"] #phone #candidate-controls, [data-variant="B"] #phone #ascent-controls {
+  background: var(--card); border: 1px solid var(--line); border-radius: .4rem; padding: .3rem .4rem; align-self: stretch;
+}
+
+/* C · Controls on the views: tower toggles and climb controls float on the 3D stage; the map carries the start form and readouts. */
+[data-variant="C"] #phone {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto auto;
+  grid-template-areas:
+    "head head"
+    "stage map"
+    "stage cand"
+    "stage rates"
+    "stage results"
+    "guide guide";
+}
+[data-variant="C"] #phone #tower-controls { grid-area: stage; align-self: start; justify-self: start; z-index: 2; margin: .5rem; }
+[data-variant="C"] #phone #ascent-controls { grid-area: stage; align-self: end; justify-self: start; z-index: 2; margin: .5rem; }
+[data-variant="C"] #phone #tower-controls .controls, [data-variant="C"] #phone #ascent-controls .controls {
+  background: color-mix(in srgb, var(--card) 88%, transparent); border: 1px solid var(--line);
+  border-radius: .45rem; padding: .35rem .45rem; box-shadow: 0 2px 10px rgba(0,0,0,.12);
+}
+[data-variant="C"] #phone #phone-results { display: grid; grid-template-columns: 1fr auto; align-items: start; gap: .2rem .5rem; }
+[data-variant="C"] #phone #phone-results .telemetry, [data-variant="C"] #stop-reason, [data-variant="C"] #truth { grid-column: 1 / -1; }

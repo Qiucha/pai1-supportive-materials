@@ -1,0 +1,49 @@
+/* PROTOTYPE, throwaway (wayfinder ticket #11). */
+.proto-bar {
+  position: fixed; left: 50%; bottom: 10px; transform: translateX(-50%); z-index: 99;
+  display: flex; gap: .5rem; align-items: center; padding: .35rem .7rem;
+  background: #111; color: #fff; border-radius: 999px; font: 13px/1.2 system-ui, sans-serif;
+  box-shadow: 0 4px 18px rgba(0,0,0,.35); white-space: nowrap;
+}
+.proto-bar button { background: #333; color: #fff; border: 1px solid #555; padding: .2rem .55rem; border-radius: 999px; font-size: 13px; }
+.proto-bar a { color: #9cf; }
+.proto-size { color: #aaa; font-variant-numeric: tabular-nums; }
+
+/* Full-width lesson column for the prototype: reading above, lab below at the full 1104px cap. */
+.lesson.proto { max-inline-size: 69rem; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 64rem) {
+  .lesson.proto { grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "context" "hook" "model" "interactive" "math" "check" "deeper" "pointer" "unlock"; }
+}
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* The lab shell every variant shares: a fixed one-screen box. */
+.lab {
+  height: clamp(560px, calc(100svh - 12px), 720px);
+  display: grid; gap: .55rem .8rem;
+  padding: .7rem .9rem !important;
+  font-size: .86rem; overflow: hidden;
+  scroll-margin-top: 6px;
+}
+.lab input[type="number"] { width: 4.6rem; }
+.lab button, .lab select, .lab input { padding: .22rem .5rem; font-size: .84rem; }
+.lab .controls { margin: 0; gap: .35rem .45rem; }
+.lab-head { display: flex; align-items: baseline; gap: .7rem; }
+.lab-head h2 { font-size: 1.05rem; }
+.lab figure { margin: 0; min-height: 0; min-width: 0; contain: size; overflow: hidden; position: relative;
+  container-type: size; display: flex; align-items: center; justify-content: center; }
+.lab .cell { min-height: 0; min-width: 0; }
+/* Views keep their aspect ratio and grow to the largest size their cell allows (no letterboxing inside the canvas, so clicks map correctly). */
+.lab .stage canvas, .lab .mapfig canvas, .lab .stage svg, .lab .mapfig svg {
+  width: min(100cqw, 100cqh * var(--ar)); height: auto; display: block;
+  border: 1px solid var(--line); border-radius: .4rem; background: var(--card);
+}
+.guide-slot {
+  display: flex; align-items: center; gap: .7rem; min-height: 64px; padding: .4rem .7rem;
+  border: 2px dashed var(--accent); border-radius: .45rem; color: var(--muted);
+}
+[data-strip="0"] .guide-slot { min-height: 0; border: 0; padding: 0; }
+[data-strip="0"] .guide-slot .slot-label { display: none; }
+.lab .guide { position: static; margin: 0; padding: .4rem .7rem; box-shadow: none; }
+.lab-notes { font: 1rem/1.55 var(--serif); max-inline-size: 70ch; }
+.lab-notes li + li { margin-top: .3rem; }

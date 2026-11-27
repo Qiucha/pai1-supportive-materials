@@ -1,0 +1,575 @@
+/* Shared visual identity for Probability for AI Lessons and Hub.
+ * Visual baseline: Reading room (narrow, <= 47rem) + Lab bench (>= 64rem, <= 69rem).
+ * Reference: .scratch/pai-learning-material/issues/04-visual-identity-skeleton.md
+ */
+
+:root {
+  color-scheme: light;
+  --light-paper: #f6f3eb;
+  --dark-paper: #1d231e;
+  --light-ink: #262b23;
+  --dark-ink: #f0f0e8;
+  --light-muted: #51594e;
+  --dark-muted: #c0c8ba;
+  --light-line: #c4c8b9;
+  --dark-line: #5c685c;
+  --light-panel: #e8edde;
+  --dark-panel: #2a352b;
+  --light-card: #fffdf8;
+  --dark-card: #222b23;
+  --light-accent: #38522f;
+  --dark-accent: #bfd5a9;
+  --light-accent-ink: #fffdf7;
+  --dark-accent-ink: #172018;
+
+  /* Signed-weight palette (default: teal positive, rose negative, gray zero) */
+  --light-positive: #16665d;
+  --dark-positive: #8bcfc4;
+  --light-negative: #903e59;
+  --dark-negative: #edacc0;
+  --light-neutral: #585f6b;
+  --dark-neutral: #bac0cc;
+
+  /* Secondary chart colours */
+  --light-chart-1: #38522f;
+  --dark-chart-1: #bfd5a9;
+  --light-chart-2: #16665d;
+  --dark-chart-2: #8bcfc4;
+  --light-chart-3: #903e59;
+  --dark-chart-3: #edacc0;
+  --light-chart-4: #8a5a19;
+  --dark-chart-4: #e7c07b;
+
+  --paper: var(--light-paper);
+  --ink: var(--light-ink);
+  --muted: var(--light-muted);
+  --line: var(--light-line);
+  --panel: var(--light-panel);
+  --card: var(--light-card);
+  --accent: var(--light-accent);
+  --accent-ink: var(--light-accent-ink);
+  --positive: var(--light-positive);
+  --negative: var(--light-negative);
+  --neutral: var(--light-neutral);
+  --chart-1: var(--light-chart-1);
+  --chart-2: var(--light-chart-2);
+  --chart-3: var(--light-chart-3);
+  --chart-4: var(--light-chart-4);
+
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  font: 16px/1.58 var(--sans);
+  scroll-padding-block: 1rem 4rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --paper: var(--dark-paper);
+    --ink: var(--dark-ink);
+    --muted: var(--dark-muted);
+    --line: var(--dark-line);
+    --panel: var(--dark-panel);
+    --card: var(--dark-card);
+    --accent: var(--dark-accent);
+    --accent-ink: var(--dark-accent-ink);
+    --positive: var(--dark-positive);
+    --negative: var(--dark-negative);
+    --neutral: var(--dark-neutral);
+    --chart-1: var(--dark-chart-1);
+    --chart-2: var(--dark-chart-2);
+    --chart-3: var(--dark-chart-3);
+    --chart-4: var(--dark-chart-4);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: var(--dark-paper);
+  --ink: var(--dark-ink);
+  --muted: var(--dark-muted);
+  --line: var(--dark-line);
+  --panel: var(--dark-panel);
+  --card: var(--dark-card);
+  --accent: var(--dark-accent);
+  --accent-ink: var(--dark-accent-ink);
+  --positive: var(--dark-positive);
+  --negative: var(--dark-negative);
+  --neutral: var(--dark-neutral);
+  --chart-1: var(--dark-chart-1);
+  --chart-2: var(--dark-chart-2);
+  --chart-3: var(--dark-chart-3);
+  --chart-4: var(--dark-chart-4);
+}
+
+/* Colour-vision-friendly high-contrast palette (Okabe-Ito blue vs vermilion) */
+:root[data-palette="cb"] {
+  --light-positive: #005b96;
+  --dark-positive: #7cc4fa;
+  --light-negative: #b83b00;
+  --dark-negative: #ffb07c;
+  --light-neutral: #525866;
+  --dark-neutral: #c2c8d4;
+  --light-chart-1: #005b96;
+  --dark-chart-1: #7cc4fa;
+  --light-chart-2: #b83b00;
+  --dark-chart-2: #ffb07c;
+  --light-chart-3: #6c3f8c;
+  --dark-chart-3: #d4b2f0;
+  --light-chart-4: #1d6f42;
+  --dark-chart-4: #8de0ad;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, select, input { font: inherit; }
+button, select, summary { cursor: pointer; }
+
+button, select {
+  min-block-size: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--card);
+  color: var(--ink);
+}
+
+button:hover:not(:disabled), select:hover { border-color: var(--accent); }
+button:disabled { opacity: 0.58; cursor: default; }
+
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  font-weight: 650;
+}
+
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+input[type="range"] {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+input[type="radio"], input[type="checkbox"] {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.18em;
+}
+
+h1, h2, h3, p { margin: 0; }
+
+h1 {
+  font: 500 clamp(2.2rem, 5.8vw, 4.1rem)/1.07 var(--serif);
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font: 600 1.55rem/1.2 var(--serif);
+  letter-spacing: -0.02em;
+}
+
+h3 {
+  font: 600 1.15rem/1.3 var(--serif);
+  letter-spacing: -0.01em;
+}
+
+p + p { margin-block-start: 0.75rem; }
+h2 + p, h3 + p, summary + p { margin-block-start: 0.65rem; }
+
+.eyebrow {
+  font: 650 0.72rem/1.4 var(--mono);
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
+.positive { color: var(--positive); }
+.negative { color: var(--negative); }
+.neutral { color: var(--neutral); }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  padding: 0.5rem 0.9rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.75rem;
+  top: 0.75rem;
+}
+
+/* Top navigation bar */
+.lesson-bar {
+  max-inline-size: 69rem;
+  margin: auto;
+  padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  border-block-end: 1px solid var(--line);
+}
+
+.series {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+
+.series a.brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.series a.brand:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.bar-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.85rem;
+}
+
+.bar-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.bar-control select {
+  min-block-size: 2.1rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Reading room + Lab bench responsive Lesson layout */
+.lesson {
+  display: grid;
+  grid-template-areas:
+    "context"
+    "hook"
+    "model"
+    "interactive"
+    "math"
+    "check"
+    "deeper"
+    "pointer"
+    "unlock";
+  gap: 1.5rem;
+  max-inline-size: 47rem;
+  margin: auto;
+  padding: 1.5rem clamp(1rem, 4vw, 2rem) 4.5rem;
+}
+
+.lesson > * { min-inline-size: 0; }
+
+.context { grid-area: context; color: var(--muted); }
+.context .eyebrow, .unlock .eyebrow { color: var(--accent); }
+.context p, .unlock p { margin-block-start: 0.3rem; }
+
+.hook {
+  grid-area: hook;
+  border-block-end: 1px solid var(--line);
+  padding-block-end: 1.4rem;
+}
+.hook h1 { max-inline-size: 22ch; }
+.hook p {
+  max-inline-size: 56ch;
+  margin-block-start: 0.85rem;
+  font-size: 1.1rem;
+}
+
+.model { grid-area: model; }
+.model p, .reading-prose p {
+  font: 1.08rem/1.62 var(--serif);
+  max-inline-size: 62ch;
+}
+.model ul, .reading-prose ul, .model ol, .reading-prose ol {
+  font: 1.05rem/1.6 var(--serif);
+  max-inline-size: 60ch;
+  padding-inline-start: 1.35rem;
+  margin: 0.65rem 0 0;
+}
+.model li + li, .reading-prose li + li { margin-block-start: 0.35rem; }
+
+.interactive {
+  grid-area: interactive;
+  background: var(--panel);
+  border-radius: 0.6rem;
+  padding: clamp(1rem, 3vw, 1.65rem);
+  border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+}
+.interactive > p, .interactive-lead {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.interactive-stack {
+  grid-area: interactive;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.35rem;
+}
+
+.interactive-stack > *,
+.disclosure-body > *,
+.interactive > * {
+  min-inline-size: 0;
+}
+
+.interactive-stack > .interactive {
+  grid-area: auto;
+}
+
+.math { grid-area: math; }
+.check {
+  grid-area: check;
+  border-inline-start: 0.22rem solid var(--accent);
+  background: var(--card);
+  padding: 1.05rem 1.25rem;
+  border-radius: 0 0.45rem 0.45rem 0;
+}
+.deeper { grid-area: deeper; }
+.pointer {
+  grid-area: pointer;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+.unlock {
+  grid-area: unlock;
+  border-block-start: 1px solid var(--line);
+  padding-block-start: 1.1rem;
+}
+
+.disclosure {
+  border-block: 1px solid var(--line);
+  padding: 0.7rem 0.05rem;
+}
+.disclosure + .disclosure {
+  border-block-start: 0;
+}
+.disclosure summary, .check summary {
+  color: var(--accent);
+  font-weight: 650;
+  list-style-position: outside;
+}
+.pointer summary { color: inherit; font-weight: 600; }
+
+.disclosure-body {
+  margin-block-start: 0.75rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.check-item + .check-item {
+  margin-block-start: 1.1rem;
+  padding-block-start: 1rem;
+  border-block-start: 1px solid var(--line);
+}
+.check-item details { margin-block-start: 0.55rem; }
+
+.formula {
+  overflow-x: auto;
+  max-width: 100%;
+  padding-block: 0.35rem;
+}
+
+.formula .katex-display {
+  margin: 0.35rem 0;
+}
+
+@media (max-width: 30rem) {
+  .formula .katex {
+    font-size: 0.92em;
+  }
+}
+
+/* Common Interactive controls */
+fieldset {
+  min-inline-size: 0;
+  padding: 0;
+  margin: 0.85rem 0;
+  border: 0;
+}
+legend {
+  padding: 0;
+  font-weight: 650;
+  font-size: 0.92rem;
+  margin-block-end: 0.45rem;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  padding: 0.42rem 0.7rem;
+  background: var(--card);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.options label:has(:checked) {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-start: 0.85rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 0.45rem;
+  padding: 0.85rem 1rem;
+}
+
+.result-status {
+  min-block-size: 1.5em;
+  margin-block-start: 0.65rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+/* Data tables */
+table.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+table.data-table th, table.data-table td {
+  text-align: left;
+  padding: 0.45rem 0.55rem;
+  border-block-end: 1px solid var(--line);
+}
+table.data-table th {
+  font-weight: 650;
+  color: var(--muted);
+}
+table.data-table td.num, table.data-table th.num {
+  text-align: right;
+}
+
+/* Signed weight legend swatches */
+.weight-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  font-size: 0.84rem;
+  align-items: center;
+}
+.weight-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+.swatch {
+  display: inline-block;
+  inline-size: 0.85em;
+  block-size: 0.68em;
+  border-radius: 0.14rem;
+  background: currentColor;
+}
+
+/* Footer navigation between Lessons */
+.lesson-nav {
+  margin-block-start: 1.1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  font-size: 0.92rem;
+}
+
+.lesson-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: var(--card);
+}
+.lesson-nav a:hover {
+  border-color: var(--accent);
+  text-decoration: underline;
+}
+
+.unofficial-note {
+  margin-block-start: 1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Wide-screen Lab bench layout (>= 64rem, per Ticket 04) */
+@media (min-width: 64rem) {
+  .lesson {
+    max-inline-size: 69rem;
+    grid-template-columns: minmax(0, 0.84fr) minmax(0, 1.16fr);
+    grid-template-areas:
+      "context context"
+      "hook hook"
+      "model interactive"
+      "math interactive"
+      "check deeper"
+      "check pointer"
+      "unlock unlock";
+    align-items: start;
+    column-gap: clamp(1.25rem, 3vw, 2.5rem);
+  }
+  .hook h1 { max-inline-size: 28ch; }
+}
+
+/* Print / reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

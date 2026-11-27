@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 5 · Neural network | Probability for AI</title>
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="../shared/site.css">
+  <style>
+    .reading-prose { display: grid; gap: 1rem; }
+    .diagram { width: 100%; height: auto; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 0.5rem; }
+    .diagram text { fill: currentColor; font: 14px system-ui, sans-serif; }
+    .diagram rect, .diagram circle { fill: var(--panel); stroke: currentColor; }
+    .diagram path, .diagram line { fill: none; stroke: currentColor; }
+    .hook-digit { width: 112px; height: 112px; image-rendering: pixelated; border-radius: 0.4rem; }
+    .centerpiece { display: grid; gap: 1rem; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+    .digits { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; max-width: 34rem; }
+    figure { margin: 0; min-width: 0; }
+    figcaption { font-size: 0.84rem; margin-top: 0.45rem; }
+    .digits canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; touch-action: none; border: 1px solid var(--line); border-radius: 0.35rem; }
+    #edited { cursor: crosshair; }
+    #edited.locked { cursor: not-allowed; opacity: 0.92; }
+    .heatmaps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
+    .heatmaps figure { padding: 0.6rem; border: 1px solid var(--line); border-radius: 0.4rem; background: var(--card); }
+    .heatmaps canvas { width: 100%; aspect-ratio: 1; image-rendering: pixelated; border: 1px solid var(--line); border-radius: 0.25rem; cursor: crosshair; }
+    .badge { display: block; font-weight: 700; color: var(--negative); margin-top: 0.25rem; }
+    .chasing { outline: 3px solid var(--negative); outline-offset: 2px; }
+    .score { font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+    .trace { font-size: 0.87rem; }
+    .swatch--zero { background: var(--card); border: 1px solid var(--line); }
+    .strategy { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.5rem; padding: 0.8rem 0; border-top: 1px solid var(--line); }
+    .table-scroll { overflow-x: auto; max-width: 100%; min-width: 0; }
+    .data-table caption { text-align: left; font-weight: 650; margin: 0.7rem 0; }
+    input[type="number"] { width: 4.5rem; color: var(--ink); background: var(--card); border: 1px solid var(--line); padding: 0.4rem; border-radius: 0.3rem; }
+    #combination { overflow-wrap: anywhere; }
+    .check-item { display: grid; gap: 0.6rem; }
+    @media (max-width: 480px) {
+      .strategy { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to lesson</a>
+  <header class="lesson-bar">
+    <div class="series">
+      <a class="brand" href="../index.html">Probability for AI</a>
+      <span class="muted eyebrow">Unofficial · Week 5 of 6</span>
+    </div>
+    <div class="bar-controls">
+      <label class="bar-control" for="theme-select">Theme
+        <select id="theme-select">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="bar-control" for="palette-select">Palette
+        <select id="palette-select">
+          <option value="default">Standard</option>
+          <option value="cb">High-contrast</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main id="main-content" class="lesson" tabindex="-1">
+    <aside class="context" aria-label="Where we are">
+      <span class="eyebrow">Where we are</span>
+      <p><strong>Week 5 · Neural network.</strong> In Week 4, one neuron combined inputs into a probability. This week, four hidden neurons feed an output neuron. We keep the network fixed and change its input.</p>
+    </aside>
+
+    <header class="hook reading-prose">
+      <h1>Can a few pixels change the answer?</h1>
+      <canvas id="hook-digit" class="hook-digit" width="112" height="112" role="img" aria-label="A clean handwritten 3 from sample 1."></canvas>
+      <p>Can you add a few pixels to a handwritten 3 so it still looks like a 3 to you, but the model says it isn't?</p>
+      <fieldset>
+        <legend>Make a prediction before you edit.</legend>
+        <div class="options">
+          <label><input type="radio" name="hook" value="yes">I think so.</label>
+          <label><input type="radio" name="hook" value="no">I doubt it.</label>
+          <label><input type="radio" name="hook" value="unsure">I am unsure.</label>
+        </div>
+      </fieldset>
+      <p>An adversarial example is an input someone changes to make a model disagree with a person's judgment. A changed model label alone does not prove that the edited digit still looks like a 3. You judge that part.</p>
+    </header>
+
+    <section class="model reading-prose">
+      <h2>A network of neurons</h2>
+      <p>This multilayer perceptron has 784 pixel inputs, four hidden neurons, and one output neuron. Each neuron multiplies its inputs by its weights, adds a bias, then applies the sigmoid function. The sigmoid maps the sum to a value between zero and one.</p>
+      <p>In Week 4 you rated the features by hand; here the network learned its own.</p>
+      <svg class="diagram" viewBox="0 0 700 260" role="img" aria-labelledby="architecture-title architecture-desc">
+        <title id="architecture-title">The network for "is it a 3?"</title>
+        <desc id="architecture-desc">Each of 784 pixels connects to all four hidden neurons. Each hidden neuron applies its own weights, bias, and sigmoid. Only the four hidden activations feed the output neuron. The output applies its own four weights, bias, and sigmoid to compute the probability of a 3.</desc>
+        <rect x="20" y="65" width="165" height="120" rx="8"/>
+        <text x="40" y="100">28 by 28 pixels</text>
+        <text x="40" y="125">784 inputs</text>
+        <text x="40" y="150">Dark 0, ink 1</text>
+        <path d="M185 125 L300 40 M185 125 L300 100 M185 125 L300 160 M185 125 L300 220 M340 40 L485 125 M340 100 L485 125 M340 160 L485 125 M340 220 L485 125"/>
+        <circle cx="320" cy="40" r="20"/>
+        <circle cx="320" cy="100" r="20"/>
+        <circle cx="320" cy="160" r="20"/>
+        <circle cx="320" cy="220" r="20"/>
+        <text x="310" y="45">h1</text>
+        <text x="310" y="105">h2</text>
+        <text x="310" y="165">h3</text>
+        <text x="310" y="225">h4</text>
+        <rect x="485" y="85" width="195" height="80" rx="8"/>
+        <text x="500" y="115">Output sigmoid</text>
+        <text x="500" y="140">P(is 3 | x)</text>
+        <text x="365" y="245">Output weights v1, v2, v3, v4</text>
+      </svg>
+      <p>All four hidden neurons receive the same pixels. Their activations describe internal responses, not calibrated class probabilities. The output neuron receives those activations and multiplies them by its own weights. A higher hidden activation can lower the final probability when its output weight is negative.</p>
+    </section>
+
+    <section class="interactive centerpiece" aria-labelledby="centerpiece-title">
+      <h2 id="centerpiece-title">Change the input</h2>
+      <h3>Stage 1: add pixels by hand</h3>
+      <div class="controls">
+        <label for="sample">Starting 3</label>
+        <select id="sample"></select>
+        <button id="reset" type="button">Reset to starting image</button>
+        <button id="return-manual" type="button" hidden>Return to manual editing</button>
+      </div>
+      <p>Click or drag over dark pixels in the edited image to add ink. Added pixels have a colored square with a dark center. For keyboard control, choose a row and column, then add that pixel. Coordinates start at 1 in the top left.</p>
+      <div class="digits">
+        <figure>
+          <canvas id="starting" width="224" height="224" role="img" aria-label="Starting handwritten 3" aria-describedby="starting-desc"></canvas>
+          <figcaption id="starting-desc"></figcaption>
+        </figure>
+        <figure>
+          <canvas id="edited" width="224" height="224" role="img" aria-label="Edited handwritten 3" aria-describedby="edited-desc"></canvas>
+          <figcaption id="edited-desc"></figcaption>
+        </figure>
+      </div>
+      <div class="controls">
+        <label>Row <input id="pixel-row" type="number" min="1" max="28" value="1"></label>
+        <label>Column <input id="pixel-col" type="number" min="1" max="28" value="1"></label>
+        <button id="add-pixel" type="button">Add this pixel</button>
+      </div>
+      <div class="card">
+        <p>$P(\text{is 3} \mid x)$</p>
+        <output id="probability" class="score"></output>
+        <p id="status" role="status" aria-live="polite"></p>
+        <p id="view-label" role="status" aria-live="polite"></p>
+      </div>
+      <p>The model says "yes" at or above 0.5. We call it fooled only when $p &lt; 0.5$.</p>
+
+      <h3>Follow the hidden activations</h3>
+      <p>Each map shows a hidden neuron's input weights. Positive weights raise its activation when you add ink. Negative weights lower it. Zero weights match the card background, and stronger color means larger magnitude. The learned patterns are speckled. These neurons do not isolate clean handwriting strokes.</p>
+      <div class="weight-legend">
+        <span class="weight-legend-item positive"><span class="swatch" aria-hidden="true"></span>+ Positive</span>
+        <span class="weight-legend-item negative"><span class="swatch" aria-hidden="true"></span>&minus; Negative</span>
+        <span class="weight-legend-item neutral"><span class="swatch swatch--zero" aria-hidden="true"></span>0 Zero</span>
+      </div>
+      <div id="heatmaps" class="heatmaps"></div>
+      <p id="heatmap-probe" class="muted trace" aria-live="polite">Move the pointer over any weight map to read a pixel's exact signed weight.</p>
+      <p id="trace" class="trace"></p>
+      <p class="muted">MNIST digits by Yann LeCun, Corinna Cortes, and Christopher J. C. Burges. We binarized the digits. Pixels above 127 count as ink. The sample images remain under <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>. <a href="https://yann.lecun.com/exdb/mnist/">MNIST source</a>.</p>
+
+      <fieldset id="prediction">
+        <legend>Which strategy will need the fewest pixels to fool the network?</legend>
+        <div class="options">
+          <label><input type="radio" name="prediction" value="every">Try every pixel</label>
+          <label><input type="radio" name="prediction" value="neuron">Chase the loudest disagreeing neuron</label>
+          <label><input type="radio" name="prediction" value="grad">Follow the gradient</label>
+        </div>
+      </fieldset>
+      <button id="compare" class="primary" type="button" disabled>Record prediction and start stage 2</button>
+      <p id="prediction-status" role="status"></p>
+
+      <h3>Stage 2: compare fixed rankings</h3>
+      <p>Each strategy starts with the untouched selected 3 and ranks its dark pixels once. Step adds the next pixel. Run continues until $p &lt; 0.5$ or the ranking runs out. Each strategy keeps its own progress.</p>
+      <div id="strategies"></div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <caption>Measured strategy comparison</caption>
+          <thead>
+            <tr>
+              <th scope="col">Strategy</th>
+              <th scope="col">Passes to rank</th>
+              <th scope="col">Verification forward passes</th>
+              <th scope="col">Pixels added to reach cutoff</th>
+            </tr>
+          </thead>
+          <tbody id="results"></tbody>
+        </table>
+      </div>
+      <p id="tradeoff">Record a prediction, then run the strategies to compare their costs.</p>
+      <p>Passes to rank exclude the forward passes that verify the score after each edit. Each verification forward pass evaluates the network once after adding a pixel, reusing the cached state rather than recomputing the view.</p>
+    </section>
+
+    <section class="math reading-prose">
+      <h2>The math</h2>
+      <details class="disclosure">
+        <summary>Trace the forward pass and the gradient</summary>
+        <div class="disclosure-body">
+          <p>Write the image as $x$. Each pixel $x_j$ is zero or one. Hidden neuron $i$ has input weights $w_{ij}$ and bias $b_i$. Its activation is $h_i$. The output has weights $v_i$ and bias $b_{\text{out}}$.</p>
+          <div class="formula">$$h_i(x)=\sigma\left(b_i+\sum_{j=1}^{784}w_{ij}x_j\right),\quad i=1,\dots,4$$</div>
+          <div class="formula">$$p=P(\text{is 3}\mid x)=\sigma\left(b_{\text{out}}+\sum_{i=1}^{4}v_i h_i(x)\right)$$</div>
+          <p>Here $\sigma(z)=1/(1+e^{-z})$. The model is fooled when $p &lt; 0.5$. At exactly 0.5 it still says "yes".</p>
+          <p>The chain rule multiplies the output slope, the output weight, the hidden sigmoid slope, and the input weight. It sums the contributions through all four hidden neurons.</p>
+          <div class="formula">$$\begin{aligned}\frac{\partial p}{\partial x_j}&=p(1-p)\sum_{i=1}^{4}v_i h_i(1-h_i)w_{ij}\end{aligned}$$</div>
+          <div class="formula">$$\begin{aligned}\frac{\partial\log p}{\partial x_j}&=\frac{1}{p}\frac{\partial p}{\partial x_j}\\&=(1-p)\sum_{i=1}^{4}v_i h_i(1-h_i)w_{ij}\end{aligned}$$</div>
+          <p>At a fixed image, $1/p$ is the same positive factor for every pixel. The probability slope and log-probability slope therefore have identical signs and rankings. The gradient strategy uses the log-probability slope.</p>
+          <p>A derivative describes a small brightness change at the starting image. A full binary flip changes zero to one. The linear approximation can miss that flip's effect because the sigmoid slopes change as the image changes.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="check">
+      <h2>Predict, then reveal</h2>
+      <div class="check-item">
+        <fieldset>
+          <legend>Check 1: Only one hidden activation rises. Its output weight is negative. What happens to p?</legend>
+          <div class="options">
+            <label><input type="radio" name="check1" value="rise">It rises.</label>
+            <label><input type="radio" name="check1" value="fall">It falls.</label>
+          </div>
+        </fieldset>
+        <button id="reveal1" type="button" disabled>Reveal answer 1</button>
+        <p id="answer1" hidden>The negative output weight turns the activation increase into a smaller output sum. The sigmoid increases with its input, so p falls.</p>
+      </div>
+      <div class="check-item">
+        <fieldset>
+          <legend>Check 2: Which strategy needs the fewest passes to rank pixels?</legend>
+          <div class="options">
+            <label><input type="radio" name="check2" value="every">Try every pixel</label>
+            <label><input type="radio" name="check2" value="neuron">Chase the loudest disagreeing neuron</label>
+            <label><input type="radio" name="check2" value="grad">Follow the gradient</label>
+          </div>
+        </fieldset>
+        <button id="reveal2" type="button" disabled>Reveal answer 2</button>
+        <p id="answer2" hidden></p>
+      </div>
+    </section>
+
+    <section class="deeper reading-prose">
+      <h2>Going deeper</h2>
+      <details class="disclosure">
+        <summary>Change what you optimize</summary>
+        <div class="disclosure-body">
+          <svg class="diagram" viewBox="0 0 480 270" role="img" aria-labelledby="training-title training-desc">
+            <title id="training-title">Training and attacking change different quantities</title>
+            <desc id="training-desc">Training keeps a labeled input fixed and changes weights and biases to improve predictions. Attacking keeps weights and biases fixed and changes pixels to lower the probability of a 3.</desc>
+            <rect x="15" y="15" width="450" height="110" rx="8"/>
+            <text x="30" y="42">Training</text>
+            <text x="30" y="70">Keep labeled input fixed.</text>
+            <text x="30" y="98">Change weights and biases to improve predictions.</text>
+            <rect x="15" y="145" width="450" height="110" rx="8"/>
+            <text x="30" y="172">Attacking</text>
+            <text x="30" y="200">Keep weights and biases fixed.</text>
+            <text x="30" y="228">Change pixels to lower P(is 3 | x).</text>
+          </svg>
+          <p>Training changes weights and biases to improve predictions on labeled examples. Attacking keeps those parameters fixed and changes the input to lower the probability of a 3.</p>
+          <p>Adding ink increases a pixel value, so we choose a dark pixel with a negative derivative. Removing ink decreases a pixel value, so we choose a lit pixel with a positive derivative. Both rules use a local approximation.</p>
+          <p>Brightness can take any value between zero and one. A partial brightness adjustment differs from a complete binary flip. Would trying every pixel and chasing a neuron still work? Trying every pixel still works, but you must choose a brightness step size for the comparison. Chasing a neuron still works because its signed weights give the direction to push its activation. Keep each adjusted brightness within zero and one.</p>
+          <p>Trying every pixel tests single additions in isolation. It does not test every combination of additions. For the selected 3, the number of ways to choose 20 dark pixels is <span id="combination"></span>.</p>
+          <p>Reranking after every edit can change the next choice because the current image changes the sigmoid slopes. It also repeats the ranking work. Our comparison ranks once at the starting image. The neuron strategy considers one hidden neuron's weights. The gradient combines all four neurons and their current slopes.</p>
+        </div>
+      </details>
+    </section>
+
+    <details class="pointer disclosure">
+      <summary>If you took the course</summary>
+      <p>The course covers this with a different example.</p>
+    </details>
+
+    <footer class="unlock">
+      <span class="eyebrow">What this unlocks</span>
+      <p>Next, we'll use what we've learned so far to evaluate a model that's already been built.</p>
+      <nav class="lesson-nav" aria-label="Lessons">
+        <a href="week4.html">Previous: Week 4</a>
+        <a href="../index.html">All lessons</a>
+        <a href="week6.html">Next: Week 6</a>
+      </nav>
+      <p class="unofficial-note">This unofficial lesson is independent of the Probability for AI course.</p>
+    </footer>
+  </main>
+
+  <script src="../vendor/katex/katex.min.js"></script>
+  <script src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script src="week5-weights.js"></script>
+  <script src="../shared/site.js"></script>
+  <script src="week5.js"></script>
+</body>
+</html>

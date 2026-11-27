@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Unofficial Probability for AI learning material. Six self-contained lessons work offline without course access.">
+  <title>Probability for AI | Lesson hub</title>
+  <link rel="stylesheet" href="shared/site.css">
+  <style>
+    .hub {
+      display: grid;
+      gap: 2rem;
+      max-inline-size: 47rem;
+      margin: auto;
+      padding: 2rem clamp(1rem, 4vw, 2rem) 4rem;
+    }
+    .hub > * { min-inline-size: 0; }
+    .hub-intro { border-block-end: 1px solid var(--line); padding-block-end: 1.5rem; }
+    .hub-intro h1 { margin-block: 0.65rem 1rem; }
+    .hub-intro .lead { font: 1.2rem/1.6 var(--serif); max-inline-size: 58ch; }
+    .hub .eyebrow { text-transform: none; letter-spacing: 0.03em; }
+    .arc-visual { display: block; inline-size: 100%; block-size: auto; margin-block: 1rem; }
+    .arc-visual path { fill: none; stroke: var(--line); stroke-width: 3; }
+    .arc-visual circle { fill: var(--card); stroke: var(--chart-1); stroke-width: 2; }
+    .arc-visual text { fill: var(--ink); font: 600 22px var(--mono); text-anchor: middle; }
+    .lesson-choices { margin: 1.25rem 0 0; padding: 0; list-style: none; display: grid; gap: 0.85rem; }
+    .lesson-choice { border: 1px solid var(--line); border-radius: 0.5rem; background: var(--card); padding: 1rem 1.15rem; }
+    .lesson-choice h3 { font-size: 1.3rem; }
+    .lesson-choice a { display: inline-block; }
+    .week-label { display: block; font: 600 0.75rem/1.5 var(--mono); color: var(--muted); margin-block-end: 0.25rem; }
+    .lesson-choice .connection { color: var(--muted); font-size: 0.9rem; }
+    .hub-guide { align-self: start; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--panel); padding: 1.25rem; }
+    .hub-guide ol { padding-inline-start: 1.35rem; margin-block: 1rem; }
+    .hub-guide li + li { margin-block-start: 0.75rem; }
+    .hub-guide h3 { margin-block-start: 1.5rem; }
+    .hub-footer { border-block-start: 1px solid var(--line); padding-block-start: 1rem; font-size: 0.9rem; color: var(--muted); }
+    @media (min-width: 64rem) {
+      .hub { max-inline-size: 69rem; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); column-gap: 2.5rem; }
+      .hub-intro, .hub-footer { grid-column: 1 / -1; }
+    }
+  </style>
+  <script src="shared/site.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to lessons</a>
+  <header class="lesson-bar">
+    <div class="series">
+      <a class="brand" href="index.html">Probability for AI</a>
+      <span class="muted eyebrow">Unofficial · Lesson hub</span>
+    </div>
+    <div class="bar-controls">
+      <label class="bar-control" for="theme-select">Theme
+        <select id="theme-select">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="bar-control" for="palette-select">Palette
+        <select id="palette-select">
+          <option value="default">Standard</option>
+          <option value="cb">High-contrast</option>
+        </select>
+      </label>
+    </div>
+  </header>
+  <main id="main-content" class="hub" tabindex="-1">
+    <header class="hub-intro">
+      <p class="eyebrow">Six weeks of probability and artificial intelligence</p>
+      <h1>Probability for AI</h1>
+      <p class="lead">Try a probability model. Fit its parameters. Change a network's prediction. Then decide what evidence you need to judge a system.</p>
+      <p>This learning material is for learners with or without course access. Each lesson explains the ideas it relies on without requiring access to the Probability for AI course.</p>
+      <p class="unofficial-note">Unofficial. This material is not an official Stanford or Code in Place publication.</p>
+    </header>
+
+    <nav aria-labelledby="lessons-heading">
+      <h2 id="lessons-heading">Choose a lesson</h2>
+      <p>Follow the numbered weeks to build on each idea, or open any week directly. You do not need to complete another week first.</p>
+      <svg class="arc-visual" viewBox="0 0 600 104" aria-hidden="true" focusable="false">
+        <path d="M35 76 Q88 30 141 48 T247 28 T353 28 T459 48 T565 76" />
+        <circle cx="35" cy="76" r="21" /><text x="35" y="84">1</text>
+        <circle cx="141" cy="48" r="21" /><text x="141" y="56">2</text>
+        <circle cx="247" cy="28" r="21" /><text x="247" y="36">3</text>
+        <circle cx="353" cy="28" r="21" /><text x="353" y="36">4</text>
+        <circle cx="459" cy="48" r="21" /><text x="459" y="56">5</text>
+        <circle cx="565" cy="76" r="21" /><text x="565" y="84">6</text>
+      </svg>
+      <ol class="lesson-choices" role="list">
+        <li class="lesson-choice">
+          <h3><a href="lessons/week1.html"><span class="week-label">Week 1</span>Chance</a></h3>
+          <p>Why would a fictional writing assistant choose its second most likely next token?</p>
+          <p class="connection">Mark each "warm glow" result as a success. Week 2 models the count of successes across repeated runs.</p>
+        </li>
+        <li class="lesson-choice">
+          <h3><a href="lessons/week2.html"><span class="week-label">Week 2</span>Models</a></h3>
+          <p>Can you estimate a hidden survey yes rate when each respondent reports only a total?</p>
+          <p class="connection">Try a rate by hand. Week 3 asks which parameter values best explain the observed data.</p>
+        </li>
+        <li class="lesson-choice">
+          <h3><a href="lessons/week3.html"><span class="week-label">Week 3</span>Fitting</a></h3>
+          <p>Can you locate a phone using the counts of packets it received from each tower?</p>
+          <p class="connection">Fit a location to observed counts. Week 4 applies parameter fitting to a neuron's weights and bias.</p>
+        </li>
+        <li class="lesson-choice">
+          <h3><a href="lessons/week4.html"><span class="week-label">Week 4</span>Single neuron</a></h3>
+          <p>How do two weights and a bias change a neuron's sailboat classification?</p>
+          <p class="connection">Compute one neuron's output. In Week 5, a neuron's output becomes another neuron's input.</p>
+        </li>
+        <li class="lesson-choice">
+          <h3><a href="lessons/week5.html"><span class="week-label">Week 5</span>Neural network</a></h3>
+          <p>Can you add pixels to a handwritten 3 so the network calls it "not a 3"?</p>
+          <p>Attack a real tiny network in your browser. Compare three ways to choose pixels.</p>
+          <p class="connection">Change a prediction by editing an input. Week 6 asks how to evaluate a system beyond one prediction.</p>
+        </li>
+        <li class="lesson-choice">
+          <h3><a href="lessons/week6.html"><span class="week-label">Week 6</span>Breaking and auditing</a></h3>
+          <p>What evidence do you need before you call a crash count of three low?</p>
+          <p class="connection">Finish with a testable audit question. Does rain increase a pedestrian detector's miss rate? Define comparable rainy and dry samples, count misses, and check whether chance could explain the difference.</p>
+        </li>
+      </ol>
+    </nav>
+
+    <aside class="hub-guide" aria-labelledby="guide-heading">
+      <h2 id="guide-heading">How to use a lesson</h2>
+      <p>Each lesson follows this sequence.</p>
+      <ol>
+        <li>A hook question gives you a concrete problem to consider.</li>
+        <li>A mental model explains how the idea works.</li>
+        <li>One or more live exercises compute results as you change their inputs.</li>
+        <li>Collapsible math explains the equations. Open it to connect the calculations to the mental model.</li>
+        <li>Checks ask you to predict a result. Make your prediction before you open the answer.</li>
+        <li>Optional, collapsible deeper notes give further explanations of the week's ideas.</li>
+      </ol>
+      <h3>Connect the weeks</h3>
+      <p>Each lesson opens by placing itself in the six-week arc and closes by explaining how its ideas connect to what comes next. Week 6 ends with an audit question you can test.</p>
+      <h3>Use optional course notes</h3>
+      <p>Most lessons include an optional, collapsible note for learners who took the course. You do not need a course login to use this package.</p>
+      <h3>Open the folder offline</h3>
+      <p>Keep the package folders together and open this hub in your browser without an internet connection. Every simulation, chart, and equation runs locally on your computer.</p>
+    </aside>
+
+    <footer class="hub-footer">
+      <p>This hub records no lesson visits, scores, or completion state. The appearance controls change the theme and palette.</p>
+    </footer>
+  </main>
+</body>
+</html>

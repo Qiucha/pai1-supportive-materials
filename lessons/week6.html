@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 6 · Breaking and auditing | Probability for AI</title>
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<link rel="stylesheet" href="../shared/site.css">
+<style>
+.chart { display: block; width: 100%; height: auto; margin-block: .8rem; color: var(--ink); }
+.chart text { fill: currentColor; font: 13px var(--sans); }
+.chart .axis { stroke: var(--ink); fill: none; }
+.chart .guide { stroke: var(--line); fill: none; }
+.chart .first { fill: var(--chart-1); }
+.chart .second { fill: var(--chart-2); }
+.chart .mark { stroke: var(--negative); fill: none; stroke-width: 2; }
+.chart .selected { stroke: var(--ink); stroke-width: 3; }
+.citation, figcaption { font: .85rem/1.5 var(--sans); color: var(--muted); overflow-wrap: anywhere; }
+figure { margin: .8rem 0; }
+.readout { margin-block: .8rem; padding: .7rem; border: 1px solid var(--line); background: var(--card); font-variant-numeric: tabular-nums; }
+input[type="range"] { width: 100%; }
+.interactive > p, .interactive > label { margin-block: .7rem; }
+.group-buttons { display: flex; flex-wrap: wrap; gap: .5rem; }
+.group-buttons [aria-pressed="true"] { border: 2px solid var(--ink); background: var(--panel); font-weight: 700; }
+.scene { max-width: 24rem; }
+textarea { display: block; width: 100%; margin-block: .5rem; padding: .6rem; background: var(--card); color: var(--ink); border: 1px solid var(--line); font: inherit; }
+.check details p { margin-block-start: .65rem; }
+.math, .deeper { min-width: 0; }
+#rain-answer { margin-block: 1rem; }
+.prompt { margin: .6rem 0; padding-inline-start: .8rem; border-inline-start: 2px solid var(--accent); }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to lesson</a>
+<header class="lesson-bar"><div class="series"><a class="brand" href="../index.html">Probability for AI</a><span class="muted eyebrow">Unofficial · Week 6 of 6</span></div>
+<div class="bar-controls"><label class="bar-control" for="theme-select">Theme <select id="theme-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label><label class="bar-control" for="palette-select">Palette <select id="palette-select"><option value="default">Standard</option><option value="cb">High-contrast</option></select></label></div></header>
+<main class="lesson" id="main-content" tabindex="-1">
+<aside class="context" aria-label="Where we are"><span class="eyebrow">Where we are</span><p><strong>Week 6 · Breaking and auditing.</strong> In Week 5, you changed a classifier's prediction by changing its input. In Week 6, you evaluate a system through counts, comparisons, and uncertainty.</p></aside>
+<header class="hook"><h1>Waymo recorded three serious-injury-or-worse crashes. What would you need to know before calling that number low?</h1><p>The June 2026 snapshot covers 271.3 million rider-only miles, about 437 million kilometers. It counts 3 Waymo vehicles involved in serious-injury-or-worse crashes. The mileage-blended, adjusted human benchmark expects 57.876 vehicles over that exposure.</p></header>
+<section class="model"><h2>Every claim needs a matching test</h2><p>Match crash outcomes and driving exposure before comparing crash rates. Measure misses within each group to find differences. Compare confidence with observed outcomes to test whether the scores agree with reality.</p><p>A low overall crash count cannot answer every safety question. Each comparison below defines a different failure and denominator.</p></section>
+<div class="interactive-stack">
+<section class="interactive" aria-labelledby="crash-title"><h2 id="crash-title">Waymo crash comparison</h2><p>Assume the human benchmark rate applies over the same exposure. Under our Poisson model, how often would the count be this low or lower?</p>
+<label for="cutoff">Include counts through cutoff <i>k</i>: <output id="cutoff-value">3</output></label><input id="cutoff" type="range" min="0" max="100" step="1" value="3">
+<svg id="crash-chart" class="chart" viewBox="0 0 520 280" role="img" aria-label="Poisson count distribution with expected count 57.876. The outlined marker fixes the observed count at 3."></svg>
+<p class="citation">The linear chart shows counts 0 through 100. Filled bars include counts through the cutoff. The outlined marker stays at the observed count of 3. Counts above 100 remain in the model.</p>
+<div id="tail-result" class="readout" role="status"></div>
+<svg id="tail-chart" class="chart" viewBox="0 0 520 125" role="img" aria-label="Companion indicator of the base-10 logarithm of the cumulative probability, on a scale from minus 26 to zero."></svg>
+<p>The companion indicator uses a logarithmic scale. Each step of 1 means a factor of 10 in probability. The tiny tail remains visible without enlarging the linear bars.</p><p>This is a lower-tail probability conditional on the human-rate model. It is not the probability that Waymo is safe. The result depends on the benchmark and the Poisson assumptions.</p>
+<p class="citation">Figures: <a href="https://waymo.com/safety/impact/">Waymo Safety Impact Hub</a>, <a href="https://storage.googleapis.com/waymo-uploads/files/documents/safety/safety-impact-data/CSV3%20-%20Collision%20Counts%20and%20Comparison%20to%20Benchmarks%20202009-202606-2022benchmark.csv">June 2026 CSV3 snapshot</a>. Methodology: <a href="https://doi.org/10.1080/15389588.2025.2499887">Kusano et al., 2025</a>.</p></section>
+<section class="interactive" aria-labelledby="miss-title"><h2 id="miss-title">Pedestrian misses</h2><p>A dataset is a collection of labeled road images used to test a detector. Keep the research detector YOLOX fixed while you change the dataset.</p>
+<label for="dataset">Dataset <select id="dataset"><option value="bdd">BDD100K</option><option value="city">CityPersons</option><option value="day">EuroCity-Day</option><option value="night">EuroCity-Night</option></select></label>
+<p id="detector-label"></p><figure><svg id="scene" class="chart scene" viewBox="0 0 360 150" role="img"></svg><figcaption id="scene-description"></figcaption></figure>
+<svg id="miss-chart" class="chart" viewBox="0 0 520 235" role="img" aria-label="Adult and child miss rates on the same 0 to 100 percent scale."></svg><p id="miss-result" class="readout" role="status"></p>
+<p>These measurements concern YOLOX on these datasets. They do not measure Waymo's production system. Representation imbalance is a possible cause to investigate. This chart alone cannot establish the cause.</p><p class="citation">Rates: <a href="https://chenzhenpeng18.github.io/papers/TOSEM24_Driving.pdf">Li et al., 2025, Bias Behind the Wheel: Fairness Testing of Autonomous Driving Systems, ACM TOSEM 34, issue 3, Figure 3</a>.</p></section>
+<section class="interactive" aria-labelledby="stop-title"><h2 id="stop-title">An attacked stop sign</h2><p>An attacker designed black-and-white stickers in a camouflage abstract-art pattern to fool a research classifier on a physical Stop sign. This applies <a href="week5.html">Week 5's adversarial-example idea</a> to a physical object. Natural wear and camera angle did not create this attack.</p>
+<figure><svg class="chart" viewBox="0 0 520 255" role="img" aria-label="Original schematic of an attacked Stop sign. A human reads Stop. The research classifier reports Speed Limit 45."><path d="M87 24 H157 L205 72 V142 L157 190 H87 L39 142 V72 Z" fill="var(--negative)" stroke="var(--ink)" stroke-width="3"/><text x="122" y="113" text-anchor="middle" style="fill:var(--paper);font-size:28px;font-weight:bold">STOP</text><path d="M58 59 l28 -6 7 14 -26 7 Z M163 133 l23 -7 -5 24 -21 -2 Z" fill="var(--ink)" stroke="var(--paper)" stroke-width="3"/><path class="axis" d="M122 193 V235 M222 75 H265 M222 150 H265"/><text x="275" y="70">Human reading</text><text x="275" y="93">"Stop"</text><text x="275" y="145">Research classifier</text><text x="275" y="168">"Speed Limit 45"</text></svg><figcaption>Original schematic of the attack. The shapes do not reproduce the paper's stickers.</figcaption></figure>
+<p><a href="https://openaccess.thecvf.com/content_cvpr_2018/html/Eykholt_Robust_Physical-World_Attacks_CVPR_2018_paper.html">Eykholt et al., 2018, Robust Physical-World Attacks on Deep Learning Visual Classification</a> tested the camouflage abstract-art sticker attack on their research classifier with target label "Speed Limit 45". The classifier misclassified 100% of stationary lab photos across controlled distances and angles, and 84.8% of video frames in drive-by field tests.</p><p>Test the attack by photographing the sign at specified distances and angles. Count photos that the classifier mislabels. Divide that count by all tested photos to measure the failure fraction.</p></section>
+<section class="interactive" aria-labelledby="cal-title"><h2 id="cal-title">Calibration</h2><p>Calibration compares reported confidence with the fraction of proposed detections that are actually pedestrians. It asks whether a score of 80% corresponds to pedestrians about 80% of the time.</p><p>These data are synthetic. Each confidence group contains 100 proposed detections.</p>
+<fieldset><legend>Select a confidence group</legend><div class="group-buttons" id="confidence-buttons"><button type="button" data-confidence="20" aria-pressed="false">20%</button><button type="button" data-confidence="40" aria-pressed="false">40%</button><button type="button" data-confidence="60" aria-pressed="false">60%</button><button type="button" data-confidence="80" aria-pressed="true">80%</button></div></fieldset>
+<svg id="cal-chart" class="chart" viewBox="0 0 520 370" role="img" aria-label="Synthetic reliability plot. Confidence and observed fraction use equal scales. Points lie below the dashed agreement diagonal."></svg><p id="cal-result" class="readout" role="status"></p><p>The denominator here is proposed detections in the confidence group. It does not include every pedestrian present in the scene.</p></section>
+</div>
+<section class="math"><h2>The math</h2>
+<details class="disclosure"><summary>Crash counts</summary><div class="disclosure-body"><p>Let $X$ count vehicles involved in crashes meeting the injury criterion over the specified exposure. The hub publishes the mileage-blended expected count $\lambda=57.876$ for $E=271.3$ million miles. That corresponds to an implied benchmark rate of $r \approx 0.21333$ vehicles per million miles.</p><div class="formula">$$\lambda = r\,E \approx 0.21333 \times 271.3 \approx 57.876$$</div><p>A probability per trial, a rate per million miles, and an expected count over total exposure are different quantities.</p><div class="formula">$$X\sim\operatorname{Poi}(57.876)$$</div><div class="formula">$$\begin{aligned}P(X\le 3)&=\sum_{j=0}^{3}e^{-57.876}\frac{57.876^j}{j!}\\&\approx 2.49\times 10^{-21}\end{aligned}$$</div><p>Sum all counts at least as low as 3 under the benchmark model.</p></div></details>
+<details class="disclosure"><summary>Count models</summary><div class="disclosure-body"><p>A Bernoulli variable records one yes/no trial with probability $p$. A Binomial variable counts successes in $n$ independent trials with the same probability $p$.</p><p>Our Poisson model assumes independent occurrences at a constant average rate over exposure. It models a count, rather than a fixed number of trials. For a rare-event Binomial approximation, use $\lambda=np$.</p></div></details>
+<details class="disclosure"><summary>Miss rates and uncertainty</summary><div class="disclosure-body"><div class="formula">$$\hat p=\frac{\text{missed pedestrians}}{\text{labeled pedestrians}}$$</div><div class="formula">$$\text{gap (pp)}=100(\hat p_{\text{child}}-\hat p_{\text{adult}})$$</div><p>A rate measured on $n$ cases is uncertain by about $\sqrt{p(1-p)/n}$. Here $p$ is the rate, estimated from the sample, and $n$ is the number of cases. This approximates one standard error under independent sampling. It is not a guaranteed error bound.</p></div></details>
+<details class="disclosure"><summary>Calibration</summary><div class="disclosure-body"><p>Within each confidence group, compare mean reported confidence with the observed fraction.</p><div class="formula">$$\text{observed}=\frac{\text{actual pedestrians}}{\text{proposed detections}}$$</div><div class="formula">$$\text{gap}=\text{confidence}-\text{observed}$$</div><p>Multiply the gap by 100 to express it in percentage points.</p></div></details>
+</section>
+<section class="check"><h2>Predict, then reveal</h2><div class="check-item"><h3>Which counts belong?</h3><p>Which crash counts belong in "three or fewer"? Decide before opening the answer.</p><details><summary>Reveal the counts</summary><p>Include 0, 1, 2, and 3. Each count is at least as low as the observed count. Sum their probabilities.</p></details></div>
+<div class="check-item"><h3>Which group has the higher miss rate?</h3><p>In an illustrative sample, the detector misses 12 of 200 adults and 6 of 30 children. Which group is it more likely to miss?</p><details><summary>Reveal the rates and uncertainty</summary><p>The adult rate is 12/200 = 6%. The child rate is 6/30 = 20%. The child rate exceeds the adult rate by 14 percentage points.</p><p>With only 30 children, the child rate has about ±7 percentage points of sampling uncertainty at one standard error: $\sqrt{0.2\times0.8/30}\approx0.073$. This is not a 95% interval.</p><p>The 14-point gap is about two standard errors, so the difference is likely real, but not certain. A larger sample would give a more precise comparison.</p></details></div>
+<div class="check-item"><h3>Where does the point go?</h3><p>A group has 100 proposed detections at 80% confidence. Only 60 are pedestrians. Choose the plot coordinates and the overconfidence gap.</p><details><summary>Reveal the point</summary><p>Plot the point at 80% confidence and 60% observed fraction: $(80\%,60\%)$. The overconfidence gap is 20 percentage points.</p></details></div></section>
+<section class="deeper"><h2>Going deeper</h2><details class="disclosure"><summary>When Poisson approximates Binomial</summary><div class="disclosure-body"><p>Let $n$ grow while $p$ shrinks and $np$ stays fixed. Each trial rarely succeeds, but many trials together still produce a count. The Binomial distribution approaches a Poisson distribution with $\lambda=np$.</p></div></details>
+<details class="disclosure"><summary>Reading very small probabilities</summary><div class="disclosure-body"><p>Decimal and scientific notation express the same quantity: $0.005=5\times10^{-3}$. A base-10 logarithm records the exponent: $\log_{10}(0.005)\approx-2.3010$.</p><p>The crash tail is about 0.00000000000000000000249. Its base-10 logarithm is about $-20.60$. Computers can represent this value. Much smaller values can underflow to zero because floating-point numbers have a finite range.</p><p>This Interactive adds probabilities in log space with log-sum-exp. It formats the answer from the logarithm so a tiny nonzero tail does not display as zero.</p></div></details>
+<details class="disclosure"><summary>Designing a fair safety test</summary><div class="disclosure-body"><p>Match the injury definition, driving exposure, and driving conditions. City streets and highways can have different risks. A p-value answers the specified comparison under its assumptions. It cannot certify every aspect of safety.</p><p>You can write your claim without another tool. This optional prompt can help you ask for feedback:</p><blockquote class="prompt">Help me turn this safety question into a testable probability claim: [my question]. Ask me what I'd sample, what counts as a failure, what I'd compare it with, and what result would make me investigate. Then help me write the claim in one sentence. Use only the data I provide.</blockquote></div></details></section>
+<details class="pointer disclosure"><summary>If you took the course</summary><p>The course covers this with a different example.</p></details>
+<footer class="unlock"><span class="eyebrow">What this unlocks</span><p>Does rain increase a pedestrian detector's miss rate? Compare labeled clips from rainy and dry drives with similar lighting and pedestrian distances. Test 100 labeled pedestrians per condition.</p><p>Before you see the illustrative counts, choose an increase that would trigger investigation. An increase equal to your threshold counts as a trigger.</p><label for="rain-threshold">Investigation threshold in percentage points <select id="rain-threshold"><option value="">Choose a threshold</option><option value="2">2</option><option value="5">5</option><option value="8">8</option></select></label><div class="actions"><button id="rain-reveal" type="button" disabled>Reveal the audit</button></div>
+<div id="rain-answer" hidden><h3>Could this be chance?</h3><p>The illustrative counts are 8 misses in rain and 3 in dry drives, out of 100 each. The rates are 8% and 3%. The increase is 5 percentage points.</p><p>Under the null comparison of equal miss rates, pool the samples: $\hat p=11/200=0.055$. For independent pedestrians, use the pooled standard error:</p><div class="formula">$$\sqrt{0.055\times0.945\times(1/100+1/100)}\approx0.0322$$</div><p>The two-proportion test gives $z\approx1.55$ and two-sided $p\approx0.12$.</p><p>This difference could easily be chance. A threshold alone is not enough to settle the safety claim. The p-value does not prove equal miss rates either.</p><p id="rain-result" class="readout" role="status"></p><p>Try another threshold. The same evidence can trigger different decisions. More independent observations would help estimate the difference.</p></div>
+<label for="own-claim">Write your own testable safety claim. Name the sample, failure event, comparison, and investigation threshold.</label><textarea id="own-claim" rows="4" placeholder="I will sample... I will count... I will compare... I will investigate when..."></textarea><p class="citation">Your writing stays in this open lesson. Reloading clears it.</p>
+<nav class="lesson-nav" aria-label="Lesson navigation"><a href="week5.html">Previous: Week 5</a><a href="../index.html">All lessons</a></nav><p class="unofficial-note">This unofficial lesson is independent of the Probability for AI course. All diagrams are original.</p></footer>
+</main>
+<script src="../vendor/katex/katex.min.js"></script><script src="../vendor/katex/contrib/auto-render.min.js"></script><script src="../shared/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  function el(id) { return document.getElementById(id); }
+  function text(x, y, value, anchor) { return '<text x="' + x + '" y="' + y + '" text-anchor="' + (anchor || 'start') + '">' + value + '</text>'; }
+  var lambda = 57.876;
+  var logMass = [-lambda];
+  for (var j = 1; j <= 220; j++) logMass[j] = logMass[j - 1] + Math.log(lambda) - Math.log(j);
+  function logSumRange(start, end) {
+    var max = -Infinity;
+    for (var i = start; i <= end; i++) if (logMass[i] > max) max = logMass[i];
+    var sum = 0;
+    for (var i = start; i <= end; i++) sum += Math.exp(logMass[i] - max);
+    return max + Math.log(sum);
+  }
+  function logTail(k) {
+    return Math.min(0, logSumRange(0, k));
+  }
+  function formatSci(logValue) {
+    var log10 = logValue / Math.LN10;
+    var exponent = Math.floor(log10);
+    var mantissa = Math.pow(10, log10 - exponent);
+    var rounded = Number(mantissa.toFixed(2));
+    if (rounded >= 10) {
+      rounded = 1;
+      exponent += 1;
+    }
+    return rounded.toFixed(2) + ' &times; 10<sup>' + exponent + '</sup>';
+  }
+  function formatTail(k, logValue) {
+    var prob = Math.exp(logValue);
+    var log10 = logValue / Math.LN10;
+    if (prob > 0.9999) {
+      var upperLog = logSumRange(k + 1, 220);
+      return '1 &minus; ' + formatSci(upperLog);
+    }
+    if (log10 >= -3) {
+      return prob.toFixed(4);
+    }
+    return formatSci(logValue);
+  }
+  function renderCrash() {
+    var k = Number(el('cutoff').value), lv = logTail(k), log10 = lv / Math.LN10;
+    el('cutoff-value').textContent = k;
+    el('tail-result').innerHTML = 'P(X &le; ' + k + ') &approx; ' + formatTail(k, lv) + '. The expected count stays at 57.876.';
+    el('tail-result').dataset.probability = Math.exp(lv);
+    var s = '<path class="axis" d="M48 25 V224 H503"/>';
+    [0, .02, .04, .06].forEach(function (p) { var y = 224 - p * 3000; s += '<path class="guide" d="M48 ' + y + ' H503"/>' + text(42, y + 4, (p * 100).toFixed(0) + '%', 'end'); });
+    for (var i = 0; i <= 100; i++) {
+      var h = Math.exp(logMass[i]) * 3000;
+      s += '<rect x="' + (49 + i * 4.45) + '" y="' + (224 - h) + '" width="3.7" height="' + h + '" fill="var(' + (i <= k ? '--chart-1' : '--neutral') + ')"/>';
+    }
+    [0, 20, 40, 60, 80, 100].forEach(function (n) { s += text(51 + n * 4.45, 244, n, 'middle'); });
+    s += '<path class="mark" d="M64 55 V224"/>' + text(70, 52, 'Observed: 3') + text(310, 24, 'Expected: 57.876');
+    s += text(275, 271, 'Vehicles involved in qualifying crashes', 'middle') + text(49, 16, 'Probability per count');
+    el('crash-chart').innerHTML = s;
+    var x = 48 + (log10 + 26) / 26 * 450;
+    s = text(48, 20, 'Base-10 log of P(X ≤ k)') + '<path class="axis" d="M48 65 H498"/>';
+    [-26, -20, -10, 0].forEach(function (n) { var tx = 48 + (n + 26) / 26 * 450; s += text(tx, 94, n, 'middle'); });
+    s += '<circle class="first selected" cx="' + x + '" cy="65" r="7"/>' + text(Math.max(70, Math.min(465, x)), 47, log10.toFixed(2), 'middle');
+    el('tail-chart').innerHTML = s;
+  }
+  var datasets = {
+    bdd: {name: 'BDD100K', adult: 5.2, child: 23.7, scene: 'BDD100K contains road images from varied drives, weather, and times of day. This illustration shows a road under clouds.', night: false, buildings: 2, cloud: true},
+    city: {name: 'CityPersons', adult: 16.5, child: 48.9, scene: 'CityPersons contains urban street scenes with labeled pedestrians. This illustration shows pedestrians beside city buildings.', night: false, buildings: 5},
+    day: {name: 'EuroCity-Day', adult: 11.9, child: 55.0, scene: 'EuroCity-Day contains daytime road scenes from European cities. This illustration shows a city street in daylight.', night: false, buildings: 3},
+    night: {name: 'EuroCity-Night', adult: 20.4, child: 54.4, scene: 'EuroCity-Night contains nighttime road scenes from European cities. This illustration shows pedestrians under streetlights.', night: true, buildings: 4}
+  };
+  function renderMisses() {
+    var d = datasets[el('dataset').value];
+    el('detector-label').textContent = 'Detector: YOLOX. Dataset: ' + d.name + '.';
+    el('miss-result').textContent = 'Adult misses: ' + d.adult.toFixed(1) + '%. Child misses: ' + d.child.toFixed(1) + '%. Child minus adult: ' + (d.child - d.adult).toFixed(1) + ' percentage points.';
+    el('scene-description').textContent = d.scene + ' Original illustration, not a study image.';
+    el('scene').setAttribute('aria-label', d.scene + ' Original illustration.');
+    var sky = d.night ? '#1b222c' : 'var(--card)';
+    var road = d.night ? '#333d4b' : 'var(--neutral)';
+    var bldg = d.night ? '#2c3645' : 'var(--line)';
+    var person = d.night ? '#f3f6fa' : 'var(--ink)';
+    var s = '<rect width="360" height="150" fill="' + sky + '"/><path d="M0 110 H360 V150 H0 Z" fill="' + road + '"/>';
+    for (var b = 0; b < d.buildings; b++) s += '<rect x="' + (15 + b * 58) + '" y="' + (25 + b % 2 * 15) + '" width="40" height="80" fill="' + bldg + '"/>';
+    s += '<circle cx="320" cy="24" r="14" fill="' + (d.night ? '#f4e3a3' : 'var(--chart-4)') + '"/>';
+    if (d.cloud) s += '<path d="M200 36 Q210 5 230 20 Q255 5 262 36 Z" fill="var(--muted)"/>';
+    if (d.night) s += '<path d="M290 110 V30 H267" stroke="#e2e8f0" stroke-width="3" fill="none"/><path d="M265 32 L244 106 H286 Z" fill="#f5d78e" opacity=".35"/>';
+    s += '<g fill="' + person + '" stroke="' + person + '" stroke-width="4"><circle cx="140" cy="75" r="7"/><path d="M140 84 V105 M140 91 L128 98 M140 91 L151 98 M140 104 L132 119 M140 104 L148 119"/><circle cx="170" cy="91" r="5"/><path d="M170 97 V113 M170 103 L161 108 M170 103 L179 108 M170 112 L164 123 M170 112 L176 123"/></g>';
+    el('scene').innerHTML = s;
+    s = text(48, 20, 'YOLOX · ' + d.name) + '<path class="axis" d="M85 35 V179 H490"/>';
+    [0, 25, 50, 75, 100].forEach(function (n) { s += text(90 + n * 3.8, 200, n + '%', 'middle'); });
+    [d.adult, d.child].forEach(function (n, i) { var y = 65 + i * 65; s += text(75, y + 20, i ? 'Child' : 'Adult', 'end') + '<rect class="' + (i ? 'second' : 'first') + '" x="90" y="' + y + '" width="' + n * 3.8 + '" height="30"/>' + text(98 + n * 3.8, y + 20, n.toFixed(1) + '%'); });
+    el('miss-chart').innerHTML = s + text(280, 228, 'Misses among labeled pedestrians', 'middle');
+  }
+  var confidence = 80;
+  function renderCalibration() {
+    var s = '<path class="axis" d="M85 35 V295 H345"/><path class="axis" stroke-dasharray="6 5" d="M85 295 L345 35"/>';
+    [0, 20, 40, 60, 80, 100].forEach(function (n) { s += text(85 + n * 2.6, 317, n + '%', 'middle') + text(75, 299 - n * 2.6, n + '%', 'end'); });
+    [20, 40, 60, 80].forEach(function (n) { s += '<circle data-point="' + n + '" class="second' + (n === confidence ? ' selected' : '') + '" cx="' + (85 + n * 2.6) + '" cy="' + (295 - n * .75 * 2.6) + '" r="' + (n === confidence ? 9 : 5) + '"/>'; });
+    s += text(215, 353, 'Reported confidence', 'middle') + text(85, 19, 'Observed pedestrian fraction') + text(353, 48, 'Dashed line:') + text(353, 68, 'agreement');
+    el('cal-chart').innerHTML = s;
+    el('cal-result').textContent = 'Confidence: ' + confidence + '%. Actual pedestrians: ' + confidence * .75 + ' of 100 proposed detections. Observed fraction: ' + confidence * .75 + '%. Overconfidence gap: ' + confidence * .25 + ' percentage points.';
+    document.querySelectorAll('[data-confidence]').forEach(function (button) { button.setAttribute('aria-pressed', String(Number(button.dataset.confidence) === confidence)); });
+  }
+  el('cutoff').addEventListener('input', renderCrash);
+  el('dataset').addEventListener('change', renderMisses);
+  document.querySelectorAll('[data-confidence]').forEach(function (button) { button.addEventListener('click', function () { confidence = Number(button.dataset.confidence); renderCalibration(); }); });
+  function renderRain() {
+    var threshold = Number(el('rain-threshold').value);
+    el('rain-reveal').disabled = !threshold;
+    el('rain-result').textContent = 'Your threshold is ' + threshold + ' percentage points. The 5-point increase ' + (5 >= threshold ? 'meets or exceeds it, so it triggers investigation.' : 'falls below it, so it does not trigger investigation.');
+  }
+  el('rain-threshold').addEventListener('change', renderRain);
+  el('rain-reveal').addEventListener('click', function () { el('rain-answer').hidden = false; renderRain(); });
+  renderCrash(); renderMisses(); renderCalibration();
+})();
+</script>
+</body>
+</html>

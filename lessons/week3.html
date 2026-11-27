@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Week 3 · Fitting | Probability for AI</title>
+  <link rel="stylesheet" href="../vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="../shared/site.css">
+  <style>
+    .full-canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .controls > * {
+      min-width: 0;
+      max-width: 100%;
+    }
+    select {
+      max-width: 100%;
+    }
+    .views {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+      margin-block: 1rem;
+    }
+    .views figure {
+      margin: 0;
+      min-width: 0;
+    }
+    .views canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.4rem;
+      background: var(--card);
+    }
+    figcaption {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      margin-block: 0.8rem;
+    }
+    input[type="number"] {
+      width: 6rem;
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      padding: 0.4rem;
+      border-radius: 0.3rem;
+    }
+    .telemetry {
+      display: block;
+      font: 0.88rem/1.65 var(--mono);
+      white-space: pre-line;
+      margin-block: 0.5rem;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .guide {
+      position: sticky;
+      bottom: 0.5rem;
+      z-index: 5;
+      border: 2px solid var(--accent);
+      background: var(--card);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .guide p {
+      margin-block: 0.3rem;
+    }
+    .guided .guide-piece {
+      opacity: 0.22;
+    }
+    .guided .guide-piece.spot {
+      opacity: 1;
+      outline: 3px solid var(--accent);
+      outline-offset: 3px;
+      background: var(--card);
+      border-radius: 0.3rem;
+    }
+    .guide-piece {
+      position: relative;
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+    .mini-grid canvas {
+      width: 100%;
+      height: auto;
+    }
+    .check-item {
+      margin-block: 1rem;
+    }
+    .check-item select {
+      max-width: 100%;
+    }
+    button[aria-pressed="true"] {
+      border: 2px solid var(--accent);
+    }
+    [hidden] {
+      display: none !important;
+    }
+    .axis-view {
+      width: 100%;
+      max-width: 420px;
+      height: auto;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: 0.35rem;
+    }
+    .interactive h3 {
+      margin-top: 1rem;
+    }
+    @media (min-width: 44rem) and (max-width: 63.99rem) {
+      .views {
+        grid-template-columns: 1.15fr 1fr;
+      }
+    }
+    @media (max-width: 600px) {
+      .guide {
+        padding: 0.65rem;
+      }
+      .mini-grid {
+        grid-template-columns: 1fr;
+      }
+      .mini-grid canvas {
+        max-width: 260px;
+      }
+      .data-table {
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to lesson</a>
+  <header class="lesson-bar">
+    <div class="series">
+      <a class="brand" href="../index.html">Probability for AI</a>
+      <span class="muted eyebrow">Unofficial · Week 3 of 6</span>
+    </div>
+    <div class="bar-controls">
+      <label class="bar-control" for="theme-select">Theme
+        <select id="theme-select">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="bar-control" for="palette-select">Palette
+        <select id="palette-select">
+          <option value="default">Standard</option>
+          <option value="cb">High-contrast</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <main id="main-content" class="lesson" tabindex="-1">
+    <aside class="context" aria-label="Where we are">
+      <span class="eyebrow">Where we are</span>
+      <p><strong>Week 3 · Fitting.</strong> We used probability models to describe observations. Now we fit a model's parameters to observations.</p>
+    </aside>
+
+    <header class="hook">
+      <h1>Can you locate a phone using only how many packets it received from each tower?</h1>
+      <p>Compare candidate locations by how likely they make the observed counts. Then use a gradient to improve a candidate.</p>
+    </header>
+
+    <section class="model reading-prose">
+      <h2>A position and a score</h2>
+      <p>The candidate parameter pair is $(x,y)$. Each position has a score. In a height plot, height represents that score.</p>
+      <p>The gradient points toward the steepest local increase. Its magnitude measures local steepness. Your move distance is a separate choice. A long move can pass a peak and land lower.</p>
+      <p>A small gradient is a stopping cue. A zero gradient at an interior point can occur at a peak, a valley, or a saddle. It does not certify the highest score.</p>
+    </section>
+
+    <div class="interactive-stack">
+      <section class="interactive" id="terrain">
+        <span class="eyebrow">Interactive 1</span>
+        <h2>Walk a two-peak terrain</h2>
+        <p>Click the overhead map to place your start. Click again to choose each whole move. Predict the uphill direction before you reveal the arrow.</p>
+        <div class="views">
+          <figure>
+            <canvas id="warm-3d" width="600" height="390" role="img" aria-label="Fixed height view of the two peaks and your trail"></canvas>
+            <figcaption>The left peak is lower. The dot and trail match the overhead map.</figcaption>
+          </figure>
+          <figure>
+            <canvas id="warm-map" width="440" height="390" role="img" aria-label="Overhead terrain map. Use the coordinate controls below as a keyboard alternative."></canvas>
+            <figcaption>The map spans negative 40 to 40 on each axis. Up increases y. A circle marks your position.</figcaption>
+          </figure>
+        </div>
+        <div class="controls">
+          <button id="start-left" type="button">Start west of the valley</button>
+          <button id="start-right" type="button">Start east of the valley</button>
+          <button id="warm-restart" type="button">Restart terrain</button>
+        </div>
+        <form id="warm-form" class="controls">
+          <label>x <input id="warm-x" type="number" min="-40" max="40" step="any" value="-20" required></label>
+          <label>y <input id="warm-y" type="number" min="-40" max="40" step="any" value="-12" required></label>
+          <button type="submit">Place or move</button>
+        </form>
+        <div class="controls">
+          <label>My uphill prediction
+            <select id="warm-predict">
+              <option value="">Choose a direction</option>
+              <option>North</option>
+              <option>South</option>
+              <option>East</option>
+              <option>West</option>
+              <option>Northeast</option>
+              <option>Northwest</option>
+              <option>Southeast</option>
+              <option>Southwest</option>
+            </select>
+          </label>
+          <button id="warm-reveal" type="button" disabled>Reveal gradient</button>
+        </div>
+        <output id="warm-output" class="telemetry" aria-live="polite"></output>
+      </section>
+
+      <section class="interactive" id="phone">
+        <span class="eyebrow">Interactive 2</span>
+        <h2>Build and climb the phone-location score</h2>
+        <p>Each tower sends 50 packets. These synthetic rounded expected counts stay fixed during this exploration. Start with A, compare rates, then add B and C.</p>
+        <div class="guide-piece" id="tower-controls">
+          <div class="controls">
+            <button id="tower-a" type="button" aria-pressed="true" disabled>Tower A is on · 16 of 50</button>
+            <button id="tower-b" type="button" aria-pressed="false">Add Tower B · 32 of 50</button>
+            <button id="tower-c" type="button" aria-pressed="false" disabled>Add Tower C · 43 of 50</button>
+          </div>
+          <p>Towers A, B, and C stand at $(-24,-18)$, $(24,-18)$, and $(0,24)$. Each tower has height 8.</p>
+        </div>
+        <div class="views guide-piece" id="phone-views">
+          <figure>
+            <canvas id="phone-3d" width="600" height="420" role="img" aria-label="Combined score height plot with towers and ascent trail"></canvas>
+            <figcaption id="render-mode">Fixed score height view.</figcaption>
+          </figure>
+          <figure>
+            <canvas id="phone-map" width="440" height="420" role="img" aria-label="Candidate map with tower letters, matching-rate rings, and ascent trail"></canvas>
+            <figcaption>Triangles mark towers. The circle marks the active position. A square marks the phone after reveal. Dashed rings match each observed rate.</figcaption>
+          </figure>
+        </div>
+        <p>The height view rescales the score so the peak is visible. The score and gradient below use the unscaled log-likelihood.</p>
+        <div class="guide-piece" id="candidate-controls">
+          <form id="phone-form" class="controls">
+            <label>Candidate x <input id="phone-x" type="number" min="-40" max="40" step="any" value="-12" required></label>
+            <label>Candidate y <input id="phone-y" type="number" min="-40" max="40" step="any" value="0" required></label>
+            <button type="submit">Choose start</button>
+          </form>
+          <p>Click the map or enter coordinates. Choosing a start clears the previous trail and hides the phone.</p>
+        </div>
+        <div class="guide-piece table-wrap" id="rates">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tower</th>
+                <th>Observed rate</th>
+                <th>Expected rate</th>
+                <th>Log-likelihood</th>
+              </tr>
+            </thead>
+            <tbody id="rate-rows"></tbody>
+          </table>
+          <p id="ring-note">A ring contains locations where the expected rate matches the observed rate. Too near predicts too many receipts. Too far predicts too few. Both score lower.</p>
+        </div>
+        <div class="guide-piece" id="ascent-controls">
+          <div class="controls">
+            <label>Step size $\alpha$ <input id="alpha" type="number" min="0.01" max="100" step="0.1" value="0.5"></label>
+            <button id="step" type="button" disabled>Step</button>
+            <button id="run" type="button" disabled>Run</button>
+            <button id="stop" type="button" disabled>Stop</button>
+            <button id="phone-restart" type="button">Restart climb</button>
+          </div>
+          <p>Enable all three towers to climb. Run continues at the current endpoint and stops after at most 300 steps.</p>
+        </div>
+        <div class="guide-piece" id="phone-results">
+          <output id="phone-output" class="telemetry"></output>
+          <p id="stop-reason" role="status">Choose a candidate to compare its rates.</p>
+          <button id="reveal-phone" type="button">Reveal simulated phone</button>
+          <p id="truth" hidden></p>
+        </div>
+        <div class="controls">
+          <button id="guide-open" type="button">Open the eight-step guide</button>
+        </div>
+        <p>Opening the guide restarts with Tower A and hides the phone. Exit keeps your current exploration.</p>
+        <div id="guide" class="guide" hidden>
+          <p id="guide-instruction" aria-live="polite"></p>
+          <p id="guide-feedback" role="status"></p>
+          <div class="controls">
+            <button id="guide-back" type="button">Back</button>
+            <button id="guide-next" type="button">Next</button>
+            <button id="guide-exit" type="button">Exit guide</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="math reading-prose">
+      <h2>The math</h2>
+      <details class="disclosure">
+        <summary>Score one tower</summary>
+        <div class="disclosure-body">
+          <p>The model uses distance including tower height. The midpoint distance is 32 and the scale is 4.5.</p>
+          <div class="formula">$$d_i=\sqrt{(x-x_i)^2+(y-y_i)^2+8^2}$$</div>
+          <div class="formula">$$p_i=\frac{1}{1+e^{(d_i-32)/4.5}}$$</div>
+          <p>Here $p_i$ is a packet's receipt probability. With $n=50$ independent packet trials and $k_i$ receipts, the count likelihood is</p>
+          <div class="formula">$$\begin{aligned}L_i(x,y)&=P(K_i=k_i\mid x,y)\\&=\binom{50}{k_i}p_i^{k_i}(1-p_i)^{50-k_i}.\end{aligned}$$</div>
+          <p>The binomial coefficient stays fixed for each observed count. We omit it when comparing locations. The displayed contribution is $k_i\log p_i+(50-k_i)\log(1-p_i)$, a log-likelihood rather than a probability.</p>
+        </div>
+      </details>
+      <details class="disclosure">
+        <summary>Combine towers</summary>
+        <div class="disclosure-body">
+          <p>We assume the tower counts are conditionally independent given the candidate location. Their likelihoods multiply. Their log-likelihoods add.</p>
+          <div class="formula">$$P(\text{packets}\mid x,y)=\prod_i L_i(x,y)$$</div>
+          <div class="formula">$$\ell(x,y)=\sum_i\log L_i(x,y)$$</div>
+          <p>Taking the logarithm preserves the maximizing location. This scores observed counts given a location. It does not give a posterior probability of the location.</p>
+        </div>
+      </details>
+      <details class="disclosure">
+        <summary>Take one uphill step</summary>
+        <div class="disclosure-body">
+          <p>The parameter pair is $\boldsymbol\theta=(x,y)$. The step size $\alpha$ multiplies the gradient of the combined log-likelihood.</p>
+          <div class="formula">$$\boldsymbol\theta_{\mathrm{next}}=\boldsymbol\theta+\alpha\nabla\ell(\boldsymbol\theta)$$</div>
+          <p id="numeric-update"></p>
+          <p>The gradient only describes local change. A finite step can lower the score.</p>
+        </div>
+      </details>
+    </section>
+
+    <section class="check">
+      <h2>Predict, then reveal</h2>
+      <div class="check-item" id="check-start">
+        <h3>Will both starts reach the same peak?</h3>
+        <label>Your prediction
+          <select>
+            <option value="">Choose</option>
+            <option>The same peak</option>
+            <option>Different peaks</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button class="check-reveal" type="button" disabled>Reveal paths</button>
+          <button class="check-reset" type="button">Retry</button>
+        </div>
+        <div class="check-answer" hidden>
+          <canvas id="paths-map" class="full-canvas" width="440" height="340" role="img" aria-label="Computed uphill paths from the two warm-up presets"></canvas>
+          <p id="paths-answer"></p>
+          <p>These computed comparison paths use small uphill steps. You still choose every move in Interactive 1.</p>
+        </div>
+      </div>
+      <div class="check-item" id="check-step">
+        <h3>Does a larger step always score higher?</h3>
+        <label>Your prediction
+          <select>
+            <option value="">Choose</option>
+            <option>The larger step wins</option>
+            <option>The smaller step wins</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button class="check-reveal" type="button" disabled>Reveal moves</button>
+          <button class="check-reset" type="button">Retry</button>
+        </div>
+        <p class="check-answer" id="step-answer" hidden></p>
+      </div>
+      <div class="check-item" id="check-ring">
+        <h3>What region fits one tower?</h3>
+        <label>Your prediction
+          <select>
+            <option value="">Choose</option>
+            <option>A ring around the tower</option>
+            <option>The tower position</option>
+          </select>
+        </label>
+        <div class="actions">
+          <button class="check-reveal" type="button" disabled>Reveal regions</button>
+          <button class="check-reset" type="button">Retry</button>
+        </div>
+        <div class="check-answer" hidden>
+          <canvas id="rings-map" class="full-canvas" width="440" height="340" role="img" aria-label="One matching-rate ring compared with three rings and their narrow overlap"></canvas>
+          <p>One tower gives a ring of equal count likelihood. Three towers narrow the high-score region near the rings' overlap. Their rings need not meet at one point. The count likelihood is $P(\text{observed packets}\mid x,y)$. It is not a posterior.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="deeper reading-prose">
+      <h2>Going deeper</h2>
+      <details class="disclosure">
+        <summary>Where the gradient comes from</summary>
+        <div class="disclosure-body">
+          <p>At the current phone candidate, the horizontal arrow shows the x partial derivative. The vertical arrow shows the y partial derivative. A negative partial derivative points along the negative axis.</p>
+          <canvas class="axis-view" id="axis-map" width="420" height="260" role="img" aria-label="Computed arrows for the two partial derivatives"></canvas>
+          <p id="axis-values"></p>
+          <div class="formula">$$\frac{\partial\ell_i}{\partial p_i}=\frac{k_i-50p_i}{p_i(1-p_i)}$$</div>
+          <div class="formula">$$\frac{\partial p_i}{\partial d_i}=-\frac{p_i(1-p_i)}{4.5}$$</div>
+          <div class="formula">$$\nabla d_i=\frac{(x-x_i,y-y_i)}{d_i}$$</div>
+          <div class="formula">$$\nabla\ell_i=\frac{50p_i-k_i}{4.5d_i}(x-x_i,y-y_i)$$</div>
+          <div class="formula">$$\nabla\ell=\sum_i\nabla\ell_i$$</div>
+          <p>The chain rule multiplies the count slope, receipt slope, and distance slope. Each enabled tower contributes to both components.</p>
+        </div>
+      </details>
+      <details class="disclosure">
+        <summary>What a small gradient tells you</summary>
+        <div class="disclosure-body">
+          <p>All three terrains have height 0 and gradient $(0,0)$ at the center. Check the nearby heights at axis distance 1.</p>
+          <div class="mini-grid">
+            <figure>
+              <canvas id="mini-peak" width="220" height="180" role="img" aria-label="Peak with zero central slope"></canvas>
+              <figcaption>Peak: $h=-x^2-y^2$. Both axis neighbors have height -1.</figcaption>
+            </figure>
+            <figure>
+              <canvas id="mini-valley" width="220" height="180" role="img" aria-label="Valley with zero central slope"></canvas>
+              <figcaption>Valley: $h=x^2+y^2$. Both axis neighbors have height 1.</figcaption>
+            </figure>
+            <figure>
+              <canvas id="mini-saddle" width="220" height="180" role="img" aria-label="Saddle with zero central slope"></canvas>
+              <figcaption>Saddle: $h=x^2-y^2$. The x neighbor has height 1. The y neighbor has height -1.</figcaption>
+            </figure>
+          </div>
+          <p>A zero gradient alone does not establish a peak. Even a local peak need not have the highest height elsewhere.</p>
+        </div>
+      </details>
+      <details class="disclosure">
+        <summary>Why the fitted location can miss the phone</summary>
+        <div class="disclosure-body">
+          <p>Both synthetic datasets use the same simulated phone at $(4,2)$. One rounds expected counts. The other draws 50 independent packet trials per tower with seed 2026. The generator uses $s_{j+1}=(1664525s_j+1013904223)\bmod 2^{32}$ and $u_j=s_j/2^{32}$. A trial receives a packet when $u_j&lt;p_i$.</p>
+          <canvas id="noise-map" class="full-canvas" width="440" height="340" role="img" aria-label="Phone square and two separately fitted synthetic estimates"></canvas>
+          <p id="noise-results"></p>
+          <p>Both fits start at $(-12,0)$ with step size 0.5. Each stops when the gradient magnitude falls below 0.001 or after 300 steps. Packet noise can make the rings disagree. The combined fit compromises between their scores. Even rounded expected counts need not recover the phone exactly.</p>
+          <p>These results depend on the reception model and conditional independence given location. A different model can change the fit.</p>
+        </div>
+      </details>
+    </section>
+
+    <footer class="unlock">
+      <span class="eyebrow">What this unlocks</span>
+      <p>Week 4 fits a neuron's weights and bias to data. Those parameters replace the two location coordinates. A score and its gradient still determine each update.</p>
+      <nav class="lesson-nav" aria-label="Lessons">
+        <a href="week2.html">Previous: Week 2</a>
+        <a href="../index.html">All lessons</a>
+        <a href="week4.html">Next: Week 4</a>
+      </nav>
+      <p class="unofficial-note">This independent lesson is unofficial and is not part of the course materials.</p>
+    </footer>
+  </main>
+
+  <script src="../vendor/katex/katex.min.js"></script>
+  <script src="../vendor/katex/contrib/auto-render.min.js"></script>
+  <script src="../vendor/three.min.js"></script>
+  <script src="../shared/site.js"></script>
+  <script src="week3.js"></script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 2 · Models | Probability for AI</title>
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<link rel="stylesheet" href="../shared/site.css">
+<style>
+.two-lists { display: grid; gap: .8rem; margin-block: 1rem; }
+.subhead { margin-block-start: 1.2rem; }
+.followup-q { margin-block-start: .8rem; }
+.two-lists ol { padding-inline-start: 1.3rem; font: .95rem/1.5 var(--sans); }
+.two-lists .extra { border-block-start: 2px solid var(--accent); padding-block-start: .5rem; margin-block-start: .5rem; }
+.report { border-block-start: 1px solid var(--line); padding-block-start: .65rem; margin-block-start: .8rem; font-weight: 650; }
+.citation { font: .85rem/1.5 var(--sans) !important; color: var(--muted); }
+.interactive h2 + p { margin-block: .65rem; }
+.interactive input[type="range"] { width: 100%; margin-block: .8rem; }
+.chart { margin-block: 1rem; }
+.chart svg { display: block; width: 100%; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: .3rem 1rem; font-size: .85rem; }
+.mean-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin-block: .3rem .8rem; }
+.mean-comparison > div { display: flex; flex-direction: column; gap: .4rem; min-width: 0; padding: .65rem; background: var(--card); border: 2px solid; border-radius: .45rem; }
+.mean-comparison > .mean-target { border-color: var(--chart-2); }
+.mean-comparison > .mean-predicted { border-color: var(--chart-3); }
+.mean-label { font-size: .85rem; font-weight: 650; }
+.mean-number { display: block; margin-block-start: auto; font-size: clamp(1.5rem, 5vw, 2.1rem); font-weight: 750; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.mean-target .mean-number { color: var(--chart-2); }
+.mean-predicted .mean-number { color: var(--chart-3); }
+.mean-unit { font-size: .75rem; color: var(--muted); }
+.model-assumptions { margin-block-start: 1rem; padding-block-start: .8rem; border-block-start: 1px solid var(--line); }
+.fit-error { margin-block: .8rem; border-inline-start: .25rem solid var(--chart-3); font-variant-numeric: tabular-nums; }
+.fit-error strong { display: block; font-size: 1.05rem; }
+.fit-error p { margin-block-start: .35rem; font-size: .85rem; }
+.numeric { margin-block-start: .8rem; }
+.table-scroll { overflow-x: auto; }
+.data-table { min-inline-size: 20rem; }
+.math .disclosure-body, .deeper .disclosure-body { font-family: var(--serif); }
+.check h3 { margin-block-end: .5rem; }
+.check details { margin-block-start: .75rem; }
+.check summary { font-size: .95rem; }
+.check details p { margin-block-start: .6rem; }
+.predict { display: block; margin-block: .65rem; font-size: .9rem; }
+.predict input { width: 6rem; padding: .35rem; background: var(--paper); color: var(--ink); border: 1px solid var(--line); }
+#die-status, #survey-means, #prediction { font-variant-numeric: tabular-nums; }
+@media (min-width: 40rem) and (max-width: 63.99rem) { .two-lists { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to lesson</a>
+<header class="lesson-bar">
+<div class="series"><a class="brand" href="../index.html">Probability for AI</a><span class="muted eyebrow">Unofficial · Week 2 of 6</span></div>
+<div class="bar-controls">
+<label class="bar-control" for="theme-select">Theme <select id="theme-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+<label class="bar-control" for="palette-select">Palette <select id="palette-select"><option value="default">Standard</option><option value="cb">High-contrast</option></select></label>
+</div>
+</header>
+<main id="main-content" class="lesson" tabindex="-1">
+<aside class="context" aria-label="Where we are"><span class="eyebrow">Where we are</span><p><strong>Week 2 · Models.</strong> Week 1 introduced events and their probabilities. Week 2 uses those probabilities to model yes/no outcomes and counts.</p></aside>
+<header class="hook"><h1>If students report only how many statements they agree with, can we estimate how many used ChatGPT to cheat on an assignment or test?</h1><p>Start with yes/no outcomes and counts on a fair die, then apply the same models to a two-list survey.</p></header>
+<section class="model" aria-labelledby="mental-model">
+<h2 id="mental-model">One outcome, then a count</h2>
+<p>A random variable assigns a number to an outcome. On one fair die roll, the face can be 1, 2, 3, 4, 5, or 6. Each face has probability $1/6$.</p>
+<p>Ask "Did it land on 5?" Let $Y=1$ for yes and $Y=0$ for no. Then $P(Y=1)=1/6$ and $P(Y=0)=5/6$. This is a Bernoulli outcome.</p>
+<p>Now ask "How many 5s did we get?" Let $X$ count the 5s in a batch of $n$ rolls. Each roll is one trial. A Binomial model counts successes in a fixed number of independent trials, each with the same success probability $p$. Here, $p=1/6$ and $n$ counts rolls in this batch.</p>
+<h3 class="subhead">Two lists, one reported total</h3>
+<p>A survey can count yeses too. Give each respondent one of two lists. Ask them to report how many statements they agree with. They do not report each answer.</p>
+<div class="two-lists" aria-label="Two survey lists with four shared statements and one extra treatment statement">
+<div class="card"><h3>Control list</h3><ol><li>I am a member of the class management board.</li><li>I have earned an A or A+ grade in a subject.</li><li>I plan to take summer courses.</li><li>I plan to pursue a master's degree.</li></ol><p class="report">Report one total: 0 through 4.</p></div>
+<div class="card"><h3>Treatment list</h3><ol><li>I am a member of the class management board.</li><li>I have earned an A or A+ grade in a subject.</li><li>I plan to take summer courses.</li><li>I plan to pursue a master's degree.</li><li class="extra">I have used ChatGPT to cheat on assignments or tests.</li></ol><p class="report">Report one total: 0 through 5.</p></div>
+</div>
+<p>The treatment list adds one sensitive statement to the four shared statements. Comparing the groups' average totals can estimate how often that extra statement got a yes.</p>
+<p class="citation">We adapted the list design from Nguyen and Goto, 2024, <a href="https://doi.org/10.1007/s10639-024-12495-4"><cite>Unmasking academic cheating behavior in the artificial intelligence era: Evidence from Vietnamese undergraduates</cite></a>. The study surveyed undergraduates at Thai Nguyen University in Vietnam. The paper permits reuse under the Creative Commons Attribution 4.0 license. We reworded the statements and drew this diagram.</p>
+</section>
+<div class="interactive-stack">
+<section class="interactive" aria-labelledby="die-title">
+<h2 id="die-title">Count 5s</h2>
+<p>Each batch rolls a fair die 10 times and counts the 5s. Click either roll button multiple times to collect more batches. As they accumulate, the sample bars tend to look more like the probability model’s outlined bars.</p>
+<div class="actions"><button id="roll-one" class="primary">Roll 1 batch</button><button id="roll-hundred">Roll 100 batches</button><button id="reset-die">Reset</button></div>
+<p id="die-status" class="result-status" role="status"></p>
+<div id="die-chart" class="chart"></div>
+<p class="muted">The solid bars show sample frequencies; the faint outlined bars show the Binomial model’s PMF at each whole-number count. Both use the same probability scale. Keep clicking to compare the sampled heights with the outlines. A finite sample need not match the model exactly.</p>
+<details class="numeric"><summary>Read the die chart values</summary><div class="table-scroll"><table class="data-table"><caption>Counts of 5s per batch</caption><thead><tr><th scope="col">Count</th><th scope="col">Batches</th><th scope="col">Sample frequency</th><th scope="col">Exact probability</th></tr></thead><tbody id="die-values"></tbody></table></div></details>
+</section>
+<section class="interactive" aria-labelledby="fit-title">
+<h2 id="fit-title">Fit the hidden yes rate</h2>
+<p id="mean-match-help"><strong>Move the slider to match the two means below.</strong> Bring your predicted treatment mean as close as possible to the simulated treatment mean. The target stays fixed.</p>
+<label for="sensitive-rate">Assumed sensitive yes rate $p_s$: <output id="rate-value" for="sensitive-rate">50%</output></label>
+<input id="sensitive-rate" aria-describedby="mean-match-help" type="range" min="0" max="100" step="1" value="50">
+<div class="mean-comparison" role="group" aria-label="Match your prediction to the target treatment mean">
+<div class="mean-target"><span id="target-label" class="mean-label">Target · simulated treatment mean</span><output id="observed-mean" class="mean-number" aria-labelledby="target-label"></output><span class="mean-unit">yeses per respondent · fixed</span></div>
+<div class="mean-predicted"><span id="prediction-label" class="mean-label">Your predicted treatment mean</span><output id="prediction" class="mean-number" for="sensitive-rate" aria-labelledby="prediction-label" role="status"></output><span class="mean-unit">yeses per respondent · changes with slider</span></div>
+</div>
+<p id="survey-means"></p>
+<div class="card fit-error"><strong id="fit-error" role="status" aria-live="polite" aria-atomic="true"></strong><p>Average absolute gap across the six treatment probabilities; smaller means a closer fit to this sample. Chart brackets show each gap: positive means the prediction is too high, negative means too low. pp = percentage points.</p></div>
+<div id="survey-chart" class="chart"></div>
+<p>We simplified the probability model here. The actual data may look a bit different.</p>
+<details class="numeric"><summary>Read the simulated survey chart values</summary><div class="table-scroll"><table class="data-table"><caption>Simulated totals and predicted treatment probabilities</caption><thead><tr><th scope="col">Total</th><th scope="col">Control count</th><th scope="col">Treatment count</th><th scope="col">Control frequency</th><th scope="col">Treatment frequency</th><th scope="col">Prediction</th><th scope="col">Prediction − treatment (pp)</th></tr></thead><tbody id="survey-values"></tbody></table></div></details>
+<p class="model-assumptions">These totals are simulated. Our model gives each shared item a 45% yes chance. It assumes the four shared answers are independent. It also assumes that the sensitive answer and the shared count are independent. These are teaching assumptions, not facts about the study respondents.</p>
+</section>
+</div>
+<section class="math" aria-labelledby="math-heading">
+<h2 id="math-heading">The math</h2>
+<details class="disclosure"><summary>One roll and a count</summary><div class="disclosure-body">
+<p>A Bernoulli variable has two values. For one roll, $Y\sim\operatorname{Ber}(p)$ with $p=1/6$.</p>
+<div class="formula">$$P(Y=1)=p,\qquad P(Y=0)=1-p.$$</div>
+<p>For a fixed $n$ independent rolls, $X\sim\operatorname{Bin}(n,p)$. One specified arrangement of $k$ successes has probability $p^k(1-p)^{n-k}$. There are $\binom{n}{k}$ ways to place those successes among the rolls. Add their probabilities for $k = 0, \ldots, n$.</p>
+<div class="formula">$$P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}$$</div>
+<p>The factor $\binom{n}{k}=n!/[k!(n-k)!]$ counts those placements. Here $p=1/6$.</p>
+</div></details>
+<details class="disclosure"><summary>A count and a hidden rate</summary><div class="disclosure-body">
+<p>Let $H$ count yeses on the four shared items. Let $S$ be 1 for a sensitive yes and 0 for a sensitive no. The treatment total is $A=H+S$, and $p_s$ is the probability of a sensitive yes.</p>
+<div class="formula">$$H\sim\operatorname{Bin}(4,0.45),\quad S\sim\operatorname{Ber}(p_s)$$</div>
+<p>A total of $k$ has two possible causes. A sensitive no leaves $H=k$. A sensitive yes requires $H=k-1$. We assume $H$ and $S$ are independent, so the probabilities multiply in each case.</p>
+<div class="formula">$$\begin{aligned}P(A=k)&=(1-p_s)P(H=k)\\&\quad+p_sP(H=k-1)\end{aligned}$$</div>
+<p>Set $P(H=j)=0$ when $j$ is outside 0 through 4. The predicted mean is</p>
+<div class="formula">$$E[A]=4(0.45)+p_s=1.80+p_s.$$</div>
+<p>For the comparison between groups, assume their shared counts have equal expectations. Linearity of expectation then gives</p>
+<div class="formula">$$E[A_{\mathrm{treatment}}]-E[H_{\mathrm{control}}]=p_s.$$</div>
+<p>This mean argument does not require independence between $H$ and $S$. Subtract the control sample mean from the treatment sample mean to estimate $p_s$.</p>
+</div></details>
+</section>
+<section class="check" aria-labelledby="check-title">
+<h2 id="check-title">Predict, then reveal</h2>
+<div class="check-item"><h3>1. Which model fits?</h3><p>Classify each variable before you open the answer: the face on one die roll, whether it landed on 5, and the number of 5s in ten rolls.</p><details><summary>Reveal the models</summary><p>The face is a six-outcome random variable. Whether it landed on 5 is a Bernoulli outcome with $p=1/6$. The number of 5s in ten independent rolls is a Binomial count with $n=10$ and $p=1/6$.</p></details></div>
+<div class="check-item"><h3>2. What can one total reveal?</h3><p>A treatment respondent reports 3. Can you determine their sensitive answer?</p><details><summary>Reveal what 3 tells us</summary><p>No. They could have three shared yeses and a sensitive no. They could also have two shared yeses and a sensitive yes.</p></details><p class="followup-q">What if they report 5? Predict before you open the answer.</p><details><summary>Reveal what 5 tells us</summary><p>All five answers must be yes. This total reveals the sensitive answer.</p></details></div>
+<div class="check-item"><h3>3. What can two groups reveal?</h3><p>Use the simulated group means above to estimate the sensitive yes rate. What difference do you get?</p><label class="predict" for="guess">Your estimate <input id="guess" type="number" min="-100" max="100" step="0.1"> %</label>
+<details id="estimate-reveal"><summary>Reveal the estimate and the study results</summary>
+<p id="sample-estimate"></p><p id="exact-estimate"></p>
+<p>The simulation's generating rate is 23.7%. A finite sample estimate can differ from the rate that generated it.</p>
+<p>Separately, Nguyen and Goto's real study estimated 23.7% through the list survey. When asked directly, 9.6% said yes. These published results describe the study population. Our simulated totals do not reproduce the study data or establish a rate for all students.</p>
+</details></div>
+</section>
+<details class="deeper disclosure"><summary>Going deeper</summary><div class="disclosure-body">
+<div><h3>Comparable groups</h3><p>Random assignment makes groups comparable on average. If the extra item changes answers to the shared items, those changes also affect the difference in totals.</p></div>
+<div><h3>Limits of privacy</h3><p>A treatment total of 0 reveals that every answer is no. A treatment total of 5 reveals that every answer is yes. Both totals reveal the sensitive answer.</p></div>
+<div><h3>Sample variation</h3><p>Another sample can give a different estimate. The published study's approximate 95% confidence interval was 10% to 37%. This interval describes uncertainty in the study estimate. We did not compute it from the simulated totals.</p></div>
+</div></details>
+<details class="pointer disclosure"><summary>If you took the course</summary><p>The course covers this with a different example.</p></details>
+<footer class="unlock"><span class="eyebrow">What this unlocks</span><p>You tried a rate by hand. Week 3 asks what makes one parameter value fit the data better than another.</p>
+<nav class="lesson-nav" aria-label="Lessons"><a href="week1.html">Previous: Week 1</a><a href="../index.html">All lessons</a><a href="week3.html">Next: Week 3</a></nav>
+<p class="unofficial-note">This unofficial lesson is an independent explanation of ideas from Probability for AI. It does not include course materials.</p>
+</footer>
+</main>
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<script src="../shared/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  function el(id) { return document.getElementById(id); }
+  function binomial(n, p) {
+    var result = [];
+    var choose = 1;
+    for (var k = 0; k <= n; k++) {
+      result.push(choose * Math.pow(p, k) * Math.pow(1 - p, n - k));
+      choose = choose * (n - k) / (k + 1);
+    }
+    return result;
+  }
+  // One reproducible dataset. LCG seed 20261103, with a fresh H for each person.
+  var seed = 20261103;
+  function fixedRandom() {
+    seed = (1664525 * seed + 1013904223) >>> 0;
+    return seed / 4294967296;
+  }
+  function sharedCount() {
+    var total = 0;
+    for (var i = 0; i < 4; i++) if (fixedRandom() < 0.45) total++;
+    return total;
+  }
+  var control = [0, 0, 0, 0, 0, 0];
+  var treatment = [0, 0, 0, 0, 0, 0];
+  for (var i = 0; i < 457; i++) control[sharedCount()]++;
+  for (var j = 0; j < 467; j++) {
+    var h = sharedCount();
+    treatment[h + (fixedRandom() < 0.237 ? 1 : 0)]++;
+  }
+  function sumTotals(counts) { return counts.reduce(function (sum, count, k) { return sum + count * k; }, 0); }
+  var controlTotal = sumTotals(control);
+  var treatmentTotal = sumTotals(treatment);
+  var controlMean = controlTotal / 457;
+  var treatmentMean = treatmentTotal / 467;
+  var difference = treatmentMean - controlMean;
+  var n = 10;
+  var batches = 0;
+  var counts = Array(n + 1).fill(0);
+  var predicted = [];
+  var hProb = binomial(4, 0.45);
+  function percent(value) {
+    var amount = value * 100;
+    return (amount > 0 && amount < 0.005 ? amount.toExponential(2) : amount.toFixed(2)) + '%';
+  }
+  // Bars, outlines and diamonds distinguish series without relying on color.
+  function chart(id, series, labels, xLabel, errors) {
+    var colors = PAI.getTokens();
+    var ink = colors.ink;
+    var hues = [colors.chart1, colors.chart2, colors.chart3];
+    var width = Math.max(460, labels.length * 30 + 65);
+    var left = 52, top = errors ? 36 : 20, bottom = 225, right = width - 15;
+    var step = (right - left) / labels.length;
+    var max = Math.max.apply(null, series.reduce(function (all, s) { return all.concat(s.values); }, []));
+    var ceiling = Math.min(1, Math.max(0.1, Math.ceil(max * 10) / 10));
+    function y(v) { return bottom - v / ceiling * (bottom - top); }
+    var markup = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' 278" role="img" aria-label="' + xLabel + '. Vertical axis: relative frequency or probability.' + (errors ? ' Brackets and signed labels show prediction minus simulated treatment in percentage points.' : '') + ' Read the numeric values below.">';
+    markup += '<defs><pattern id="' + id + '-stripe" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M0 5L5 0" stroke="' + hues[1] + '" stroke-width="1.5"/></pattern></defs>';
+    for (var tick = 0; tick <= 4; tick++) {
+      var value = ceiling * tick / 4;
+      markup += '<path d="M' + left + ' ' + y(value) + 'H' + right + '" stroke="' + colors.line + '"/>';
+      markup += '<text x="45" y="' + (y(value) + 4) + '" fill="' + ink + '" text-anchor="end" font-size="12">' + Math.round(value * 100) + '%</text>';
+    }
+    labels.forEach(function (k) {
+      var x = left + step * (k + 0.5);
+      series.forEach(function (s, index) {
+        if (s.shape !== 'outline') return;
+        var bw = step * 0.66;
+        markup += '<rect class="pmf-outline" x="' + (x - bw / 2) + '" y="' + y(s.values[k]) + '" width="' + bw + '" height="' + (bottom - y(s.values[k])) + '" fill="none" stroke="' + hues[index] + '" stroke-width="1.5" stroke-opacity=".55"/>';
+      });
+      series.forEach(function (s, index) {
+        if (s.shape === 'outline') return;
+        var v = s.values[k];
+        if (s.shape === 'diamond') {
+          markup += '<path d="M' + x + ' ' + (y(v) - 4) + 'l4 4 -4 4 -4 -4Z" fill="' + hues[index] + '" stroke="' + ink + '" stroke-width=".7"/>';
+        } else {
+          var bw = step * 0.29;
+          var bx = series.some(function (s) { return s.shape === 'outline'; }) ? x - bw / 2 : x + (index === 0 ? -bw - 1 : 1);
+          markup += '<rect x="' + bx + '" y="' + y(v) + '" width="' + bw + '" height="' + (bottom - y(v)) + '" fill="' + (index === 0 ? hues[index] : 'url(#' + id + '-stripe)') + '" stroke="' + hues[index] + '"/>';
+        }
+      });
+      if (errors) {
+        var observedY = y(series[1].values[k]);
+        var predictedY = y(series[2].values[k]);
+        var gapX = x + step * 0.4;
+        var labelY = Math.min(y(series[0].values[k]), observedY, predictedY) - 10;
+        markup += '<path d="M' + (gapX - 4) + ' ' + observedY + 'H' + gapX + 'V' + predictedY + 'H' + (gapX - 4) + '" fill="none" stroke="' + ink + '" stroke-width="1.5"/>';
+        markup += '<text x="' + x + '" y="' + labelY + '" text-anchor="middle" fill="' + ink + '" font-size="10" font-weight="650">' + signedPoints(errors[k]) + ' pp</text>';
+      }
+      markup += '<text x="' + x + '" y="244" text-anchor="middle" fill="' + ink + '" font-size="12">' + k + '</text>';
+    });
+    markup += '<text x="' + (width / 2) + '" y="269" text-anchor="middle" fill="' + ink + '" font-size="13">' + xLabel + '</text></svg><div class="legend">';
+    series.forEach(function (s, index) {
+      markup += '<span style="color:' + hues[index] + '">' + (s.shape === 'outline' ? '▯ ' : s.shape === 'diamond' ? '◆ ' : index === 0 ? '■ ' : '▨ ') + s.name + '</span>';
+    });
+    if (errors) markup += '<span>↕ Prediction − treatment (pp)</span>';
+    el(id).innerHTML = markup + '</div>';
+  }
+  function drawDie() {
+    var exact = binomial(n, 1 / 6);
+    var frequencies = counts.map(function (c) { return batches ? c / batches : 0; });
+    el('die-status').textContent = batches ? batches + ' sampled batches of ' + n + ' rolls each.' : 'No sampled batches yet. Choose Roll 1 batch or Roll 100 batches to start.';
+    chart('die-chart', [{ name: 'Sample frequency, solid bars', values: frequencies }, { name: 'Binomial PMF, faint outlines', values: exact, shape: 'outline' }], counts.map(function (_, k) { return k; }), 'Number of 5s in a batch');
+    el('die-values').innerHTML = counts.map(function (c, k) { return '<tr><th scope="row">' + k + '</th><td>' + c + '</td><td>' + (batches ? percent(frequencies[k]) : 'No samples') + '</td><td>' + percent(exact[k]) + '</td></tr>'; }).join('');
+  }
+  function clearDie() { batches = 0; counts = Array(n + 1).fill(0); drawDie(); }
+  function roll(batchCount) {
+    for (var b = 0; b < batchCount; b++) {
+      var successes = 0;
+      for (var r = 0; r < n; r++) if (Math.floor(Math.random() * 6) + 1 === 5) successes++;
+      counts[successes]++;
+    }
+    batches += batchCount;
+    drawDie();
+  }
+  function signedPoints(value) {
+    var rounded = (value * 100).toFixed(2);
+    return Number(rounded) === 0 ? '0.00' : (value > 0 ? '+' : '−') + Math.abs(Number(rounded)).toFixed(2);
+  }
+  function drawSurvey() {
+    var ps = Number(el('sensitive-rate').value) / 100;
+    predicted = control.map(function (_, k) { return (1 - ps) * (hProb[k] || 0) + ps * (hProb[k - 1] || 0); });
+    var errors = predicted.map(function (p, k) { return p - treatment[k] / 467; });
+    var meanAbsoluteError = errors.reduce(function (sum, error) { return sum + Math.abs(error); }, 0) / errors.length;
+    el('fit-error').textContent = 'Average absolute error at ' + Math.round(ps * 100) + '%: ' + (meanAbsoluteError * 100).toFixed(2) + ' percentage points';
+    el('rate-value').textContent = Math.round(ps * 100) + '%';
+    el('prediction').dataset.mean = String(1.8 + ps);
+    el('prediction').textContent = (1.8 + ps).toFixed(4);
+    el('observed-mean').textContent = treatmentMean.toFixed(4);
+    el('survey-means').textContent = 'Simulated samples: control, 457 respondents (mean ' + controlMean.toFixed(4) + '); treatment, 467 respondents.';
+    chart('survey-chart', [{ name: 'Simulated control, solid bars', values: control.map(function (c) { return c / 457; }) }, { name: 'Simulated treatment, striped bars', values: treatment.map(function (c) { return c / 467; }) }, { name: 'Predicted treatment, diamonds', values: predicted, shape: 'diamond' }], [0, 1, 2, 3, 4, 5], 'Reported total', errors);
+    el('survey-values').innerHTML = control.map(function (c, k) { return '<tr data-probability="' + predicted[k] + '"><th scope="row">' + k + '</th><td>' + c + '</td><td>' + treatment[k] + '</td><td>' + percent(c / 457) + '</td><td>' + percent(treatment[k] / 467) + '</td><td>' + percent(predicted[k]) + '</td><td>' + signedPoints(errors[k]) + '</td></tr>'; }).join('');
+  }
+  el('sample-estimate').textContent = 'The simulated sample estimate is ' + (difference * 100).toFixed(1) + '%. We subtract the control sample mean of ' + controlMean.toFixed(3) + ' from the treatment sample mean of ' + treatmentMean.toFixed(3) + '.';
+  el('exact-estimate').textContent = 'Using the exact totals, ' + treatmentTotal + '/467 minus ' + controlTotal + '/457 equals ' + difference.toFixed(4) + ', or ' + (difference * 100).toFixed(2) + '%. With about 460 people per list, this difference-in-means estimate typically misses the true rate by about 7 percentage points.';
+  el('roll-one').addEventListener('click', function () { roll(1); });
+  el('roll-hundred').addEventListener('click', function () { roll(100); });
+  el('reset-die').addEventListener('click', clearDie);
+  el('sensitive-rate').addEventListener('input', drawSurvey);
+  document.querySelectorAll('details').forEach(function (detail) { detail.addEventListener('toggle', function () { if (detail.open) PAI.renderMath(detail); }); });
+  PAI.onAppearanceChange(function () { drawDie(); drawSurvey(); });
+  drawDie();
+  drawSurvey();
+})();
+</script>
+</body>
+</html>

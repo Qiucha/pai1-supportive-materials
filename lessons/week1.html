@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1 · Chance | Probability for AI</title>
+<link rel="stylesheet" href="../vendor/katex/katex.min.css">
+<link rel="stylesheet" href="../shared/site.css">
+<style>
+.interactive h3 { margin-block: 1.1rem .5rem; }
+.control { display: grid; gap: .35rem; margin-block: .8rem; }
+.control select { width: 100%; min-width: 0; }
+.bars { display: grid; gap: .45rem; }
+.prob-row { display: grid; grid-template-columns: 4rem 1fr 3rem; gap: .45rem; align-items: center; font-size: .9rem; }
+.track { height: .6rem; border-radius: 1rem; background: var(--card); border: 1px solid var(--line); }
+.fill { height: 100%; border-radius: inherit; background: var(--chart-2); }
+.branch { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; align-items: start; margin-block: .8rem; }
+.branch-step + .branch-step { border-inline-start: 2px solid var(--line); padding-inline-start: .65rem; }
+.branch-step { display: grid; gap: .35rem; }
+.node { padding: .4rem .6rem; border: 1px solid var(--line); border-radius: .35rem; background: var(--card); font-size: .85rem; }
+.node.selected { border: 2px solid var(--accent); font-weight: 650; }
+.path-note { margin-block-start: .3rem; font-size: .8rem; color: var(--muted); }
+.prefix { font-family: var(--serif); font-size: 1.15rem; margin-block: .8rem; }
+.latest { margin-block: .8rem; }
+.die-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.die-controls .control { min-width: 0; }
+.die-controls select { font-size: .9rem; padding-inline: .4rem; }
+.set-diagram { margin-block: .9rem; border: 1px solid var(--line); border-radius: .5rem; background: var(--card); }
+.set-diagram svg { display: block; width: 100%; height: auto; }
+.set-e { fill: var(--chart-2); fill-opacity: .1; stroke: var(--chart-2); stroke-width: 2.5; }
+.set-f { fill: var(--chart-3); fill-opacity: .1; stroke: var(--chart-3); stroke-width: 2.5; stroke-dasharray: 7 4; }
+.set-label { font: 700 18px var(--sans); fill: var(--ink); text-anchor: middle; }
+.set-label-e { fill: var(--chart-2); }
+.set-label-f { fill: var(--chart-3); }
+.set-note { font: 15px var(--sans); fill: var(--muted); text-anchor: middle; }
+.die-body { fill: #fffdf8; stroke: #262b23; stroke-width: 2; }
+.die-pip { fill: #262b23; }
+.die.ruled-out .die-face { opacity: .45; }
+.die-strike { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+.event-results { display: grid; gap: .3rem; font-size: .9rem; margin-block: .8rem; }
+#conditional { font-weight: 650; }
+#relationship { margin-block-start: .8rem; }
+.check h3 { margin-block-end: .4rem; }
+.deeper h2, .math h2 { margin-block-end: .7rem; }
+.reading-prose details p { margin-block: .65rem; }
+.formula { max-width: 100%; }
+@media (max-width: 30rem) { .branch { grid-template-columns: 1fr; } .branch-step + .branch-step { border-inline-start: 0; border-block-start: 2px solid var(--line); padding-inline-start: 0; padding-block-start: .65rem; } .data-table th, .data-table td { padding-inline: .25rem; } }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to lesson</a>
+<header class="lesson-bar">
+<div class="series"><a class="brand" href="../index.html">Probability for AI</a><span class="muted eyebrow">Unofficial · Week 1 of 6</span></div>
+<div class="bar-controls">
+<label class="bar-control" for="theme-select">Theme <select id="theme-select"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+<label class="bar-control" for="palette-select">Palette <select id="palette-select"><option value="default">Standard</option><option value="cb">High-contrast</option></select></label>
+</div>
+</header>
+<main id="main-content" class="lesson" tabindex="-1">
+<aside class="context" aria-label="Where we are"><span class="eyebrow">Where we are</span><p><strong>Week 1 · Chance.</strong> Use a probability distribution to choose an outcome. Then see how evidence changes which outcomes count.</p></aside>
+<header class="hook"><h1>Why would a writing assistant ever choose its second-favorite word?</h1><p>Sampling can choose a token with a smaller probability. Pick the highest always chooses the most likely token at each step.</p></header>
+<section class="model reading-prose"><h2>A rule for the next token</h2><p>A token is one unit of text. Our fictional assistant uses whole words as tokens. Its next-token probabilities add up to one.</p><p>Sample chooses a token at random with those probabilities. Pick the highest chooses the token with the largest probability at each step. We call this rule greedy decoding.</p><p>After the assistant appends a token, the full text so far is its updated prefix. That prefix determines the next distribution. A less likely first token can give the second token a larger chance.</p></section>
+<div class="interactive-stack">
+<section class="interactive" aria-labelledby="lantern-title">
+<div class="eyebrow">Interactive 1</div><h2 id="lantern-title">Continue the lantern sentence</h2><p>Choose a rule, then run one or 20 continuations to compare the counts.</p>
+<label class="control" for="rule">Selection rule<select id="rule"><option value="sample">Sample</option><option value="highest">Pick the highest</option></select></label>
+<div class="actions"><button id="run-one" class="primary">Run 1</button><button id="run-twenty">Run 20</button><button id="reset">Reset</button></div>
+<p class="prefix">The lantern cast a</p>
+<h3>Fictional assistant next-token probabilities</h3>
+<p class="muted">These probabilities stay fixed. The selection rule determines how the assistant uses them.</p>
+<div id="first-bars" class="bars" role="group" aria-label="First-token probabilities"></div>
+<div class="branch" role="group" aria-label="Latest path through two tokens"><div class="branch-step"><p class="eyebrow">First token</p><div id="first-branches" class="branch-step"></div></div><div class="branch-step"><p class="eyebrow">Second token</p><p id="branch-prefix" class="muted">Run a continuation to expand its branch.</p><div id="second-branches" class="branch-step"></div></div></div>
+<div id="latest" class="card latest">No continuation yet.</div>
+<div id="lantern-status" class="result-status" role="status" aria-live="polite" aria-atomic="true">Sample. 0 runs.</div>
+<table class="data-table"><caption id="counts-caption">Observed Sample results. Total runs: 0.</caption><thead><tr><th scope="col">Continuation</th><th scope="col" class="num">Count</th></tr></thead><tbody id="counts"></tbody></table>
+<p class="muted" id="count-note">Observed counts vary under Sample. They are results of runs, not the assistant's next-token probabilities.</p>
+<details class="disclosure"><summary>See every prefix distribution</summary><table class="data-table"><thead><tr><th>First token</th><th>glow</th><th>light</th></tr></thead><tbody><tr><th>warm</th><td>75%</td><td>25%</td></tr><tr><th>faint</th><td>40%</td><td>60%</td></tr><tr><th>steady</th><td>55%</td><td>45%</td></tr></tbody></table></details>
+</section>
+<section class="interactive" aria-labelledby="die-title"><div class="eyebrow">Interactive 2</div><h2 id="die-title">Count the faces that remain</h2><p>Choose event E and the evidence, then compare the original fraction with the fraction among remaining faces.</p>
+<p>The sample space S contains the six faces of a fair die. An event is a subset of those faces. Conditioning counts only faces that the evidence leaves possible.</p>
+<p><strong>F is fixed.</strong> Roll an even number, with faces {2, 4, 6}.</p>
+<div class="die-controls">
+<label class="control" for="event">Event E<select id="event"><option value="six">Roll a six</option><option value="three">Roll a multiple of three</option><option value="odd">Roll an odd number</option><option value="four">Roll a 1, 2, 3, or 4</option></select></label>
+<label class="control" for="evidence">Evidence<select id="evidence"><option value="all">All faces</option><option value="even">Even only</option><option value="odd">Odd only</option></select></label>
+</div>
+<p class="muted">Each die sits in the sets it belongs to. The overlap is E ∩ F; everything inside either circle is E ∪ F. Everything outside E is its complement.</p>
+<div id="die-grid" class="set-diagram"></div>
+<p class="muted">Crossed-out dice are ruled out by the evidence. Their set membership stays the same.</p>
+<h3>Original probabilities, before evidence</h3><div id="event-results" class="event-results"></div><p class="muted">The inclusive union counts an overlapping face once.</p>
+<div class="card latest" role="status" aria-live="polite" aria-atomic="true"><p id="conditional"></p><p id="relationship"></p></div>
+<p class="muted">Independence is a property of these events. In another model, you must state it as an assumption and justify it.</p>
+</section>
+</div>
+<section class="math reading-prose"><h2>The math</h2>
+<details class="disclosure"><summary>Multiply along a sampled continuation</summary><div class="disclosure-body"><p>The second choice depends on the prefix. Multiply the first probability by the second probability given that first token.</p><div class="formula">$P(\text{warm glow})=P(\text{warm})P(\text{glow}\mid\text{warm})$</div><div class="formula">$0.50\times0.75=0.375$</div><p>Under Sample, warm glow has a 37.5% chance. Pick the highest always chooses warm glow in this example.</p></div></details>
+<details class="disclosure"><summary>Count complements, unions, and evidence</summary><div class="disclosure-body"><p>The complement contains every face outside E. Its count is six minus the count in E.</p><div class="formula">$P(E^c)=1-P(E)$</div><p>Add the counts in E and F for their union. Subtract the intersection because that addition counts it twice.</p><div class="formula">$P(E\cup F)=P(E)+P(F)-P(E\cap F)$</div><p>For evidence F with positive probability, divide the probability of both events by the probability of F.</p><div class="formula">$P(E\mid F)=\frac{P(E\cap F)}{P(F)},\quad P(F)>0$</div><p>A six occupies one of six faces, but one of three even faces. Its chance changes from 1/6 to 1/3. A multiple of three occupies two of six faces and one of three even faces. Its chance stays at 1/3.</p><p>F together with its complement contains the whole sample space. Evidence that allows every face changes nothing.</p><div class="formula">$F\cup F^c=S,\qquad P(E\mid S)=P(E)$</div></div></details>
+<details class="disclosure"><summary>Separate exclusivity from independence</summary><div class="disclosure-body"><p>Mutually exclusive events have no outcomes in common.</p><div class="formula">$E\cap F=\varnothing\quad\Longrightarrow\quad P(E\cap F)=0$</div><p>Then $P(E\mid F)=0$ when $P(F)>0$. The reverse conditional $P(F\mid E)=0$ requires $P(E)>0$.</p><p>Independence means that the joint probability equals the product of the individual probabilities.</p><div class="formula">$P(E\cap F)=P(E)P(F)$</div><p>Odd and even are mutually exclusive and dependent. Knowing the roll is even rules out odd. Multiples of three and even overlap and are independent. One of the three even faces is a multiple of three, just as two of all six faces are.</p><p>Rolling a 1, 2, 3, or 4 is also independent of even. Its chance is $4/6=2/3$ overall and $2/3$ among even faces.</p></div></details>
+</section>
+<section class="check reading-prose"><h2>Predict, then reveal</h2>
+<div class="check-item"><h3>1. Which continuation is more likely?</h3><p>Under Sample, is warm light or faint light more likely? Make a prediction before you reveal the answer.</p><details><summary>Reveal the lantern answer</summary><p>Faint light has probability $0.30\times0.60=18\%$. Warm light has probability $0.50\times0.25=12.5\%$. Light's conditional probability depends on the first token.</p></details></div>
+<div class="check-item"><h3>2. What changes with even evidence?</h3><p>The roll was even. Which chance changes, a six or a multiple of three? Make a prediction first.</p><details><summary>Reveal the die answer</summary><p>A six changes from 1/6 to 1/3. A multiple of three stays at 1/3. The first event depends on even evidence. The second event is independent of it.</p></details></div>
+<div class="check-item"><h3>3. What does the first flip tell you?</h3><p>Two fresh flips of a fair coin are independent. The first was heads. Predict the chance of heads on the second.</p><details><summary>Reveal the coin answer</summary><p>The chance is 1/2. The stated independence makes the first flip irrelevant to the probability for the second flip.</p></details></div>
+</section>
+<section class="deeper reading-prose"><h2>Going deeper</h2>
+<details class="disclosure"><summary>What if the evidence has probability zero?</summary><p>The elementary conditional probability ratio divides by $P(F)$. If $P(F)=0$, division by zero leaves this conditional undefined. The product definition of independence still applies when an event has probability zero or one.</p><p>When $0&lt;P(F)&lt;1$, both F and its complement have positive probability. Independence is then equivalent to the following equality.</p><div class="formula">$P(E)=P(E\mid F)=P(E\mid F^c)$</div></details>
+<details class="disclosure"><summary>How do real text models differ?</summary><p>Real tokens can be pieces of words. A model uses its full prefix at every step. Our fictional assistant has only two steps and a small table of probabilities.</p><p>A sampled continuation's probability is the product of its successive conditional probabilities. The full prefix conditions each factor.</p><div class="formula">$P(t_1,\ldots,t_n\mid x)=\prod_{i=1}^{n}P(t_i\mid x,t_1,\ldots,t_{i-1})$</div><p>Here x is the starting prefix and each t is a token.</p></details>
+<details class="disclosure"><summary>Return to Sample 20</summary><p>Define success as warm followed by glow in one fresh run. Each run starts with the same prefix and sampling rules. Each run independently succeeds with probability 0.375.</p><p>Give a success the value 1 and any other continuation the value 0. This is a success indicator. How many successes do you expect in 20 runs? How much could the count vary?</p><p>The expected count is $20\times0.375=7.5$. That is an average across repeated batches. One batch has a whole-number count and need not match that average. Return to Sample and Run 20 to compare batches.</p></details>
+</section>
+<details class="pointer disclosure"><summary>If you took the course</summary><p>The course covers this with a different example.</p></details>
+<footer class="unlock"><span class="eyebrow">What this unlocks</span><p>Week 2 gives one run's success indicator a name, the Bernoulli model. The count of successes in 20 independent runs with the same success probability follows a binomial model. The lantern gives you both quantities to explore.</p><nav class="lesson-nav" aria-label="Lesson navigation"><a href="../index.html">All lessons</a><a href="week2.html">Next: Week 2</a></nav><p class="unofficial-note">This independent, unofficial lesson has no affiliation with the course. You can use it without course access.</p></footer>
+</main>
+<script src="../vendor/katex/katex.min.js"></script>
+<script src="../vendor/katex/contrib/auto-render.min.js"></script>
+<script src="../shared/site.js"></script>
+<script>
+(function () {
+  'use strict';
+  var words = ['warm', 'faint', 'steady'];
+  var first = [0.5, 0.3, 0.2];
+  var glow = [0.75, 0.4, 0.55];
+  var counts = [0, 0, 0, 0, 0, 0];
+  var total = 0;
+  var latest = null;
+  function el(id) { return document.getElementById(id); }
+  function percent(p) { return Math.round(p * 100) + '%'; }
+  function bar(word, probability) {
+    return '<div class="prob-row"><span>' + word + '</span><div class="track"><div class="fill" style="width:' + percent(probability) + '"></div></div><span>' + percent(probability) + '</span></div>';
+  }
+  el('first-bars').innerHTML = words.map(function (word, i) { return bar(word, first[i]); }).join('');
+  function renderLantern() {
+    var ruleName = el('rule').value === 'sample' ? 'Sample' : 'Pick the highest';
+    el('first-branches').innerHTML = words.map(function (word, i) {
+      return '<div class="node' + (latest && latest.a === i ? ' selected' : '') + '">' + word + ' ' + percent(first[i]) + (latest && latest.a === i ? ' · Selected first' : '') + '</div>';
+    }).join('');
+    el('second-branches').innerHTML = latest ? ['glow', 'light'].map(function (word, j) {
+      var p = j === 0 ? glow[latest.a] : 1 - glow[latest.a];
+      return '<div class="node' + (latest.b === j ? ' selected' : '') + '">' + bar(word, p) + '<div class="path-note">' + (latest.b === j ? 'Selected path ends here.' : 'Other option.') + '</div></div>';
+    }).join('') : '';
+    el('branch-prefix').textContent = latest ? 'After "The lantern cast a ' + words[latest.a] + '"' : 'Run a continuation to expand its branch.';
+    el('latest').textContent = latest ? 'The lantern cast a ' + words[latest.a] + ' ' + (latest.b === 0 ? 'glow' : 'light') + '. First token: ' + percent(first[latest.a]) + '. Second token given this prefix: ' + percent(latest.b === 0 ? glow[latest.a] : 1 - glow[latest.a]) + '.' : 'No continuation yet.';
+    el('counts').innerHTML = counts.map(function (count, i) { return '<tr><th scope="row">' + words[Math.floor(i / 2)] + ' ' + (i % 2 === 0 ? 'glow' : 'light') + '</th><td class="num">' + count + ' / ' + total + '</td></tr>'; }).join('');
+    el('counts-caption').textContent = 'Observed ' + ruleName + ' results. Total runs: ' + total + '.';
+    el('count-note').textContent = ruleName === 'Sample' ? "Observed counts vary under Sample. They are results of runs, not the assistant's next-token probabilities." : 'Pick the highest always chooses warm glow. These counts describe this rule, not a sampling distribution.';
+    el('lantern-status').textContent = ruleName + '. ' + total + ' runs.' + (latest ? ' Latest: ' + words[latest.a] + ' ' + (latest.b === 0 ? 'glow' : 'light') + '.' : '');
+  }
+  function run(n) {
+    for (var i = 0; i < n; i++) {
+      var a = 0;
+      var b = 0;
+      if (el('rule').value === 'sample') {
+        var draw = Math.random();
+        a = draw < first[0] ? 0 : draw < first[0] + first[1] ? 1 : 2;
+        b = Math.random() < glow[a] ? 0 : 1;
+      }
+      counts[a * 2 + b]++;
+      total++;
+      latest = { a: a, b: b };
+    }
+    renderLantern();
+  }
+  function reset() { counts = [0, 0, 0, 0, 0, 0]; total = 0; latest = null; renderLantern(); }
+  el('rule').addEventListener('change', reset);
+  el('reset').addEventListener('click', reset);
+  el('run-one').addEventListener('click', function () { run(1); });
+  el('run-twenty').addEventListener('click', function () { run(20); });
+  var presets = { six: [6], three: [3, 6], odd: [1, 3, 5], four: [1, 2, 3, 4] };
+  var faces = [1, 2, 3, 4, 5, 6];
+  function dieSvg(n, x, y, possible, membership) {
+    var pipPositions = [[], [[0, 0]], [[-12, -12], [12, 12]], [[-12, -12], [0, 0], [12, 12]], [[-12, -12], [12, -12], [-12, 12], [12, 12]], [[-12, -12], [12, -12], [0, 0], [-12, 12], [12, 12]], [[-12, -12], [12, -12], [-12, 0], [12, 0], [-12, 12], [12, 12]]];
+    var pips = pipPositions[n].map(function (p) { return '<circle class="die-pip" cx="' + p[0] + '" cy="' + p[1] + '" r="3.5"/>'; }).join('');
+    return '<g class="die' + (possible ? '' : ' ruled-out') + '" transform="translate(' + x + ' ' + y + ')" role="img" aria-label="Roll ' + n + '. ' + membership + '. ' + (possible ? 'Possible' : 'Ruled out') + '"><g class="die-face"><rect class="die-body" x="-23" y="-23" width="46" height="46" rx="7"/>' + pips + '</g>' + (possible ? '' : '<path class="die-strike" d="M-25 25 L25 -25"/>') + '</g>';
+  }
+  function renderDie() {
+    var event = presets[el('event').value];
+    var evidence = el('evidence').value;
+    var intersection = event.filter(function (n) { return n % 2 === 0; });
+    var union = faces.filter(function (n) { return event.indexOf(n) !== -1 || n % 2 === 0; });
+    var remaining = faces.filter(function (n) { return evidence === 'all' || (evidence === 'even' ? n % 2 === 0 : n % 2 !== 0); });
+    var numerator = remaining.filter(function (n) { return event.indexOf(n) !== -1; }).length;
+    var regions = [[], [], [], []];
+    faces.forEach(function (n) {
+      var inE = event.indexOf(n) !== -1;
+      var inF = n % 2 === 0;
+      regions[inE ? (inF ? 1 : 0) : (inF ? 2 : 3)].push(n);
+    });
+    var dice = regions.map(function (region, i) {
+      return region.map(function (n, j) {
+        var x = i === 3 ? 240 + (j - (region.length - 1) / 2) * 60 : [100, 240, 380][i];
+        var y = i === 3 ? 375 : 200 + (j - (region.length - 1) / 2) * 60;
+        var possible = remaining.indexOf(n) !== -1;
+        var membership = ['In E, outside F', 'In both E and F', 'In F, outside E', 'Outside both E and F'][i];
+        return dieSvg(n, x, y, possible, membership);
+      }).join('');
+    }).join('');
+    el('die-grid').innerHTML = '<svg viewBox="0 0 480 410" role="group" aria-labelledby="sets-title sets-description"><title id="sets-title">Die outcomes in events E and F</title><desc id="sets-description">All six outcomes appear once. E is the solid circle on the left. F is the dashed circle on the right. Their overlap contains outcomes in both. Crossed-out dice are excluded by the evidence.</desc><text x="240" y="24" class="set-note">S · all six outcomes</text><circle cx="170" cy="180" r="140" class="set-e"/><circle cx="310" cy="180" r="140" class="set-f"/><text x="100" y="80" class="set-label set-label-e">E</text><text x="380" y="80" class="set-label set-label-f">F · even</text><text x="240" y="109" class="set-note">E ∩ F</text><text x="240" y="127" class="set-note">both</text><text x="100" y="103" class="set-note">E only</text><text x="380" y="103" class="set-note">F only</text><text x="240" y="340" class="set-note">Outside both</text>' + dice + '</svg>';
+    el('event-results').innerHTML = '<div>E: ' + event.length + '/6</div><div>Complement of E: ' + (6 - event.length) + '/6</div><div>Intersection of E and F: ' + intersection.length + '/6</div><div>Union of E and F: ' + union.length + '/6</div><div>F: 3/6</div>';
+    el('conditional').textContent = 'With ' + el('evidence').selectedOptions[0].text.toLowerCase() + ', E contains ' + numerator + ' of the ' + remaining.length + ' possible faces. Conditional probability: ' + numerator + '/' + remaining.length + '.';
+    var independent = intersection.length * 6 === event.length * 3;
+    var evidenceNote = evidence === 'all'
+      ? (independent ? 'Knowing the roll is even or odd leaves the probability of E unchanged.' : 'Conditioning on even or odd changes the probability of E.')
+      : evidence === 'even'
+        ? (independent ? 'Knowing the roll is even leaves the probability of E unchanged.' : 'Knowing the roll is even changes the probability of E.')
+        : (independent ? 'Knowing the roll is odd leaves the probability of E unchanged.' : 'Knowing the roll is odd changes the probability of E.');
+    el('relationship').textContent = (intersection.length === 0 ? 'E and F are mutually exclusive. ' : 'E and F overlap, so they are not mutually exclusive. ') + (independent ? 'They are independent. ' : 'They are dependent. ') + evidenceNote;
+  }
+  el('event').addEventListener('change', renderDie);
+  el('evidence').addEventListener('change', renderDie);
+  renderLantern();
+  renderDie();
+})();
+</script>
+</body>
+</html>

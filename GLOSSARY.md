@@ -1,6 +1,6 @@
 # Glossary
 
-**Lab** — An interactive panel in a lesson where the learner changes inputs with controls and watches the results. A figure with no controls is not a lab, and neither is a check (a pick-then-reveal question). A merged lab combines several of a week's labs into one, with a case switch and one guide.
+**Lab** — An interactive panel in a lesson where the learner changes inputs with controls and watches the results. A figure with no controls is not a lab, and neither is a check (a pick-then-reveal question). A merged lab combines several of a week's labs into one, with a case or stage switch and one guide.
 
 **Guide** — A short scripted walk through one lab that teaches 1–3 core ideas. It opens on its own the first time the lab is fully on screen, can be skipped or replayed, and ends in explore freely.
 

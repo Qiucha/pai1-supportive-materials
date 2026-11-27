@@ -5,6 +5,9 @@
   const qs = new URLSearchParams(location.search);
   let v = keys.includes(qs.get('variant')) ? qs.get('variant') : 'A';
   const strip = qs.get('strip') !== '0';
+  const TEXT = { reading: 'Text: reading above', tips: 'Text: tooltips in lab', guide: 'Text: in guide steps' };
+  const text = TEXT[qs.get('text')] ? qs.get('text') : 'reading';
+  document.documentElement.dataset.text = text;
   document.documentElement.dataset.variant = v;
   document.documentElement.dataset.strip = strip ? '1' : '0';
 
@@ -22,14 +25,17 @@
       '<button type="button" data-d="-1" aria-label="Previous variant">←</button>' +
       '<span><b>' + v + '</b> · ' + VARIANTS[v] + '</span>' +
       '<button type="button" data-d="1" aria-label="Next variant">→</button>' +
+      '<button type="button" data-text>' + TEXT[text] + ' ▸</button>' +
       '<button type="button" data-strip>' + (strip ? 'Hide' : 'Show') + ' guide strip</button>' +
       '<a href="' + other[0] + '?' + qs.toString() + '">' + other[1] + '</a>' +
       '<span class="proto-size"></span>';
     document.body.append(bar);
     bar.querySelectorAll('[data-d]').forEach(b => b.onclick = () => cycle(Number(b.dataset.d)));
+    bar.querySelector('[data-text]').onclick = () => { const k = Object.keys(TEXT); qs.set('text', k[(k.indexOf(text) + 1) % k.length]); location.search = qs.toString(); };
     bar.querySelector('[data-strip]').onclick = () => { qs.set('strip', strip ? '0' : '1'); location.search = qs.toString(); };
     addEventListener('keydown', e => {
       if (e.target.closest('input, textarea, select, [contenteditable]')) return;
+      if (e.key === 'h') bar.hidden = !bar.hidden;
       if (e.key === 'ArrowLeft') cycle(-1);
       if (e.key === 'ArrowRight') cycle(1);
     });

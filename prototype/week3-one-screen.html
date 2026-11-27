@@ -255,6 +255,7 @@
             <button id="tower-a" type="button" aria-pressed="true" disabled>Tower A is on · 16 of 50</button>
             <button id="tower-b" type="button" aria-pressed="false">Add Tower B · 32 of 50</button>
             <button id="tower-c" type="button" aria-pressed="false" disabled>Add Tower C · 43 of 50</button>
+            <button type="button" class="info" popovertarget="tip-towers" aria-label="About this">i</button><div popover id="tip-towers" class="info-pop">Each tower sends 50 packets; these synthetic counts stay fixed. Towers A, B, C stand at (−24,−18), (24,−18), (0,24), each 8 high. The height view rescales the score so the peak shows; the numbers use the unscaled log-likelihood.</div>
           </div>
         </div>
         <div class="views guide-piece" id="phone-views">
@@ -271,6 +272,7 @@
             <label>x <input id="phone-x" type="number" min="-40" max="40" step="any" value="-12" required></label>
             <label>y <input id="phone-y" type="number" min="-40" max="40" step="any" value="0" required></label>
             <button type="submit">Choose start</button>
+            <button type="button" class="info" popovertarget="tip-map" aria-label="About this">i</button><div popover id="tip-map" class="info-pop">Triangles: towers. Circle: active position. Square: phone after reveal. A dashed ring holds the places whose expected rate matches the observed rate: too near predicts too many receipts, too far too few. Choosing a start clears the trail and hides the phone.</div>
           </form>
         </div>
         <div class="guide-piece table-wrap cell" id="rates">
@@ -286,6 +288,7 @@
             <button id="run" type="button" disabled>Run</button>
             <button id="stop" type="button" disabled>Stop</button>
             <button id="phone-restart" type="button">Restart climb</button>
+            <button type="button" class="info" popovertarget="tip-climb" aria-label="About this">i</button><div popover id="tip-climb" class="info-pop">Climbing needs all three towers. Run continues from the current endpoint and stops after at most 300 steps.</div>
           </div>
         </div>
         <div class="guide-piece cell" id="phone-results">
@@ -296,6 +299,7 @@
         </div>
         <div class="guide-slot cell">
           <span class="slot-label">Guide area placeholder (strip or pop-ups: decided in a later ticket)</span>
+          <p class="mock-step"><b>Step 1 of 3 · sample text.</b> Tower A (bottom left) received 16 of its 50 packets. Click the map close to A. Do you predict its expected rate will be above or below 16/50? <span class="muted">(The tower positions, ring meaning and run limits also appear in “The math” below.)</span></p>
           <button id="guide-open" type="button">Guide</button>
           <div id="guide" class="guide" hidden>
             <p id="guide-instruction" aria-live="polite"></p>

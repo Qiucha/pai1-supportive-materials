@@ -58,7 +58,7 @@ Question: does a guide's text sit in a **strip** inside the lab, or in **pop-ups
 What all three share:
 - 3 sample steps of predict-then-act. The text is a placeholder; the real script comes later.
 - The guide opens automatically. Each step completes when the learner uses the real control. Nothing is locked: "Skip step" becomes "Next" once the step is done.
-- The guide hands over about 2s after the last action (Reveal), then shows "Explore freely" with "Replay guide". Esc exits.
+- The guide hands over about 2s after the last action (Reveal), then shows "Explore freely" with "Replay guide". Esc only closes an open ⓘ tip; leaving the guide takes Skip guide.
 - The old W3 guide UI is hidden. Completion isn't saved (a prototype rule).
 
 ## Measurements (Chromium 1366×650; raw output in `measurements-guide.txt`, screenshots `shots/guide-*`)

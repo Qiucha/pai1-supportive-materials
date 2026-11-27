@@ -73,7 +73,7 @@
     document.addEventListener('click', e => { if (i >= 0 && !done && STEPS[i].done(e)) complete(); setTimeout(place, 0); });
     $('phone-form').addEventListener('submit', e => { if (i === 0 && !done) complete(); });
     addEventListener('resize', place);
-    addEventListener('keydown', e => { if (e.key === 'Escape' && i >= 0) finish(); });
+    // Esc never affects the guide; native popover closes an open ⓘ tip (#12).
   }
 
   function spot(sel) { return [...lab().querySelectorAll(sel)]; }
